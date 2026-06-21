@@ -23,23 +23,13 @@ from geophysics_forward_plotting import __version__
 def _cmd_render(args: argparse.Namespace) -> int:
     from geophysics_forward_plotting.agent.planner import Planner
     from geophysics_forward_plotting.agent.plotting_agent import PlottingAgent
-    from geophysics_forward_plotting.core.io import load_array
-    from geophysics_forward_plotting.core.models import DataContext
 
     config = Path(args.config)
     print(f"[gfp] 加载配置：{config}")
     task = Planner.from_yaml(config)
 
-    arrays = []
-    for p in task.data_paths:
-        if p.exists():
-            arrays.append(load_array(p))
-        else:
-            print(f"[gfp] 警告：数据文件不存在，跳过 {p}", file=sys.stderr)
-
-    ctx = DataContext(raw_data=tuple(arrays))
     agent = PlottingAgent()
-    result = agent.run(task, ctx)
+    result = agent.run(task)
 
     print(f"[gfp] 完成：{result.summary}")
     for path in result.saved_paths:

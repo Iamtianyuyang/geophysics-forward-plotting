@@ -29,6 +29,8 @@ Returns a list of warnings and suggestions — does not modify the figure.
 | shot_record with symmetric=False  | WARNING  | Amplitude data must use symmetric clim                |
 | wavefield with symmetric=False    | WARNING  | Wavefield amplitude must be symmetric                 |
 | Axes missing xlabel/ylabel        | WARNING  | Each matplotlib Axes must have labeled axes           |
+| Rendered image shape changed      | ERROR    | CIGVis must preserve `(vertical, horizontal)` order    |
+| CIGVis order not restored         | ERROR    | Global order changes must not leak into later figures  |
 | Export format missing PDF         | INFO     | Vector PDF preferred for journal submission           |
 
 ### Typography and Sizing Checks (Paper Standards)
@@ -91,6 +93,7 @@ gfp review examples/configs/shot_record.yaml
 - Using DPI=72 (screen resolution) instead of 600 (publication).
 - Forgetting to confirm unified clim in comparison figures.
 - Non-symmetric clim in amplitude figures.
+- Accepting correct labels on an image that CIGVis transposed.
 
 Do not treat a clean configuration review as proof that rendered labels, clipping,
 or panel alignment are correct. Inspect the figure object when it is available.
@@ -101,6 +104,7 @@ or panel alignment are correct. Inspect the figure object when it is available.
 - Return warnings and information without mutating the task or figure.
 - Use 300 dpi as the minimum raster threshold and 600 dpi as the export default.
 - Escalate missing units, invalid amplitude scaling, and non-unified comparison limits.
+- Inspect rendered image shape and actual y-axis limits, not only task metadata.
 
 ## Example Prompt
 

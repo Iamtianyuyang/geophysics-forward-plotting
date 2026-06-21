@@ -67,6 +67,19 @@ Minimum acceptable DPI: 300. Default: 600.
 - Arrays are stored as `(nz, ny, nx)` for 3D volumes.
 - Always verify axis order before plotting to avoid transposed figures.
 
+### CIGVis Order Mapping
+
+- CIGVis defaults to `LINE_FIRST=True`; raw `cigvis.plot2d` therefore transposes
+  input. The framework temporarily uses `LINE_FIRST=False` for normalized
+  `(nt/nz, nx)` images and restores the previous global value.
+- CIGVis 3D examples use `(x, y, z/time)`. Convert framework
+  `(nz, ny, nx)` volumes with `transpose(2, 1, 0)` at the backend boundary.
+- Convert native `(z, y, x)` slice indices to explicit CIGVis
+  `{"x": [x], "y": [y], "z": [z]}` positions.
+- Do not transpose SliceViewer volumes. Set `display_axes=(vertical, horizontal)`
+  in native data-axis indices.
+- Verify the rendered 2D image shape and actual y limits, not only labels.
+
 ## Physical Coordinates vs Array Indices
 
 **Always use physical coordinates** (km, s) on axes, not array indices (0, 1, 2, ...).

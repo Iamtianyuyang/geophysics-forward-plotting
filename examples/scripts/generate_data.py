@@ -101,8 +101,8 @@ def deepwave_shot_record(
     f0: float = F0,
 ) -> NDArray:
     """用 deepwave scalar() 生成炮记录 (nt, nx)。"""
-    import torch
     import deepwave
+    import torch
 
     nz, nx = vel.shape
     v = torch.from_numpy(vel.copy())
@@ -148,8 +148,8 @@ def deepwave_snapshots(
     f0: float = F0,
 ) -> dict[int, NDArray]:
     """用 deepwave scalar() + forward_callback 获取波场快照。"""
-    import torch
     import deepwave
+    import torch
 
     nz, nx = vel.shape
     v = torch.from_numpy(vel.copy())
@@ -214,8 +214,10 @@ def pseudo_spectral_2d(
     gamma = 0.015
     for i in range(absorb):
         val = float(np.exp(-((gamma * (absorb - i)) ** 2)))
-        sp[i, :] *= val; sp[-(i+1), :] *= val
-        sp[:, i] *= val; sp[:, -(i+1)] *= val
+        sp[i, :] *= val
+        sp[-(i + 1), :] *= val
+        sp[:, i] *= val
+        sp[:, -(i + 1)] *= val
 
     kx = np.fft.fftfreq(nx, d=dx) * 2 * np.pi
     kz = np.fft.fftfreq(nz, d=dx) * 2 * np.pi

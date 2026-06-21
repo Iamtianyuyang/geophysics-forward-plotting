@@ -6,4 +6,12 @@ output_dir: examples/outputs
 symmetric_clim: false
 clip_percentile: 99.0
 parameters:
+  data_layout: nz_ny_nx
   cmap: gray
+  display_axes: [0, 2]  # (vertical depth axis, horizontal distance axis)
+  indices:
+    1: 15
+  axis_labels: ["Depth (km)", "Crossline (km)", "Distance (km)"]
+  interpolation: nearest
+  render_mode: float
+  port: 5007

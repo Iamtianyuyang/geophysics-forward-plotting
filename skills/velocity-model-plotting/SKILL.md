@@ -65,6 +65,8 @@ Optional parameters via `parameters` dict:
 
 ## Default Behavior
 
+- Render with `cigvis.plot2d` through the backend after normalizing to `(nz, nx)`.
+- Verify CIGVis did not transpose the model and that depth increases downward.
 - colormap: `jet`
 - clim: asymmetric, 1st–99th percentile
 - depth axis: downward

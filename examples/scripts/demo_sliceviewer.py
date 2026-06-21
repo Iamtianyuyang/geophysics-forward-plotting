@@ -26,7 +26,12 @@ task = FigureTask(
     title="Interactive SliceViewer",
     symmetric_clim=False,
     clip_percentile=99.0,
-    parameters={"cmap": "gray"},
+    parameters={
+        "data_layout": "nz_ny_nx",
+        "display_axes": [0, 2],
+        "axis_labels": ["Depth", "Crossline", "Distance"],
+        "cmap": "gray",
+    },
 )
 
 agent = PlottingAgent()

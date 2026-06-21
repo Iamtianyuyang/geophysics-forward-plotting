@@ -14,6 +14,10 @@ This project is **built on CIGVis** as the primary visualization backend.
 - CIGVis repository: https://github.com/JintaoLee-Roger/cigvis
 - CIGVis Gallery: https://cigvis.readthedocs.io/en/latest/gallery/index.html
 
+After this router, read `cigvis-api-plotting/SKILL.md` for every geophysical
+1D/2D/3D task. It contains the API routing and axis-order contract shared by
+the specialized figure skills.
+
 ## When to Use
 
 Use this root skill description when:
@@ -24,7 +28,8 @@ Use this root skill description when:
 ## Inputs
 
 - A natural-language plotting request or a `FigureTask`/YAML configuration.
-- One or more NumPy arrays or `.npy` paths.
+- One or more NumPy arrays or NPY/BIN/SEG-Y/SU paths. For BIN, require shape,
+  dtype, endianness, and memory order instead of guessing.
 - Physical sampling metadata (`dx`, `dz`, `dt`, origins, and units) whenever available.
 - Optional method names, error definitions, performance baselines, overlays, and export formats.
 
@@ -41,6 +46,7 @@ User request
   -> TaskRouter (identify task_type)
   -> Planner (load FigureTask from YAML or dict)
   -> DataInspectorSkill (load arrays, infer layout)
+  -> CIGVisApiPlotting (select public API and convert axes)
   -> [Target Skill] (produce figure)
   -> FigureReviewSkill (check conventions)
   -> ExportSkill (save PNG/PDF/SVG)
@@ -61,6 +67,7 @@ Matplotlib handles:
 
 | Task Type                | Sub-skill SKILL.md                            |
 |--------------------------|-----------------------------------------------|
+| CIGVis API selection     | cigvis-api-plotting/SKILL.md                  |
 | velocity_model           | velocity-model-plotting/SKILL.md              |
 | shot_record              | shot-record-plotting/SKILL.md                 |
 | wavefield_snapshot       | wavefield-snapshot-plotting/SKILL.md          |
@@ -136,10 +143,13 @@ Height should preserve a reasonable aspect ratio (typically width × 0.7–0.9).
 - Setting time or depth axis to point upward.
 - Using a non-symmetric colormap for amplitude data.
 - Using DPI < 300 for publication figures.
+- Calling raw CIGVis APIs without applying the declared data-layout conversion.
+- Assuming CIGVis `LINE_FIRST=True` is safe for `(nz, nx)` or `(nt, nx)` data.
 
 ## Default Behavior
 
-- Read this root skill first, then read one specialized plotting skill plus `figure-review`.
+- Read this root skill first, then `cigvis-api-plotting`, one specialized
+  plotting skill, and `figure-review`.
 - Inspect data before rendering when only paths or ambiguous arrays are supplied.
 - Prefer CIGVis for geophysical views and Matplotlib for statistics or 2D fallback.
 - Review every rendered result and export only after convention checks complete.

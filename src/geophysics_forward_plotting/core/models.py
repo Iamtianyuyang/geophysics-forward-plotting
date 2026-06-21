@@ -72,6 +72,7 @@ class FigureTask:
     task_type: TaskType | str
     title: str = ""
     data_paths: tuple[Path | str, ...] = ()
+    data_options: tuple[dict[str, Any], ...] | Mapping[str, Any] = ()
     output_dir: Path | str = Path("outputs")
     x_label: str | None = None
     y_label: str | None = None
@@ -104,6 +105,15 @@ class FigureTask:
             else self.data_paths
         )
         self.data_paths = tuple(Path(path) for path in raw_paths)
+        raw_data_options = self.data_options
+        if isinstance(raw_data_options, Mapping):
+            self.data_options = tuple(dict(raw_data_options) for _ in self.data_paths)
+        else:
+            self.data_options = tuple(dict(options) for options in raw_data_options)
+        if self.data_options and len(self.data_options) != len(self.data_paths):
+            raise ConfigurationError(
+                "data_options must be one mapping shared by all paths or one mapping per data path"
+            )
         self.output_dir = Path(self.output_dir)
         raw_names = (
             (self.method_names,) if isinstance(self.method_names, str) else self.method_names

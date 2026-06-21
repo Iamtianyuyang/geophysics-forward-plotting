@@ -74,6 +74,8 @@ Optional via `parameters`:
 
 ## Default Behavior
 
+- Render with `cigvis.plot2d` through the backend after normalizing to `(nt, nx)`.
+- Verify rendered shape and actual time-axis direction before export.
 - colormap: `seismic`
 - symmetric_clim: `True`
 - clip_percentile: 99.0

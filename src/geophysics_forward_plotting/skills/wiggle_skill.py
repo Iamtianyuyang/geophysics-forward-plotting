@@ -10,11 +10,12 @@
 
 from __future__ import annotations
 
+from geophysics_forward_plotting.backend import cigvis_backend
 from geophysics_forward_plotting.backend.adapters import (
     apply_publication_style,
     build_wiggle_kwargs,
+    to_vertical_first_2d,
 )
-from geophysics_forward_plotting.backend.matplotlib_backend import wiggle_plot
 from geophysics_forward_plotting.core.enums import TaskType
 from geophysics_forward_plotting.core.models import DataContext, FigureResult, FigureTask, PlotStyle
 from geophysics_forward_plotting.skills.base import BaseSkill
@@ -36,8 +37,9 @@ class WiggleSkill(BaseSkill):
 
     def run(self, task: FigureTask, context: DataContext) -> FigureResult:
         style = PlotStyle()
-        kwargs = build_wiggle_kwargs(task, style)
-        fig = wiggle_plot(context.primary(), **kwargs)
+        kwargs = build_wiggle_kwargs(task, style, context)
+        data = to_vertical_first_2d(context.primary(), context.inferred_layout)
+        fig = cigvis_backend.plot1d_wiggle(data, **kwargs)
         apply_publication_style(fig, style)
 
         saved = save_figure(
@@ -51,4 +53,5 @@ class WiggleSkill(BaseSkill):
             figure=fig,
             saved_paths=saved,
             summary=f"Wiggle 图已保存至 {[str(p) for p in saved]}",
+            metadata={"expected_y_direction": "down"},
         )

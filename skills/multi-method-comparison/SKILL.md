@@ -70,8 +70,8 @@ im2 = ax2.imshow(data_b, vmin=data_b.min(), vmax=data_b.max())  # WRONG
 **Correct:**
 ```python
 vmin, vmax = global_symmetric_clim([data_a, data_b], percentile=99)
-im1 = ax1.imshow(data_a, vmin=vmin, vmax=vmax)
-im2 = ax2.imshow(data_b, vmin=vmin, vmax=vmax)
+im1 = cigvis_backend.plot2d_on_axes(data_a, ax=ax1, clim=(vmin, vmax))
+im2 = cigvis_backend.plot2d_on_axes(data_b, ax=ax2, clim=(vmin, vmax))
 ```
 
 ### Rule 2: Use ONE shared colorbar
@@ -95,6 +95,8 @@ All panels must use the same `extent` so spatial coordinates match visually.
 
 ## Default Behavior
 
+- Render geophysical panels with `cigvis.plot2d(..., ax=...)` through the
+  backend, then build one shared Matplotlib colorbar from the common image artist.
 - Layout: 1×2 for 2 methods, 2×2 for 3–4 methods
 - Clim: symmetric, global 99th percentile
 - One shared colorbar on the right

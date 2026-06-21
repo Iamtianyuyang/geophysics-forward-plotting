@@ -13,8 +13,12 @@ from __future__ import annotations
 
 import numpy as np
 
-from geophysics_forward_plotting.backend.adapters import apply_publication_style
-from geophysics_forward_plotting.backend.matplotlib_backend import _get_mpl, imshow_panel
+from geophysics_forward_plotting.backend import cigvis_backend
+from geophysics_forward_plotting.backend.adapters import (
+    apply_publication_style,
+    to_vertical_first_2d,
+)
+from geophysics_forward_plotting.backend.matplotlib_backend import _get_mpl
 from geophysics_forward_plotting.core.enums import TaskType
 from geophysics_forward_plotting.core.exceptions import DataValidationError
 from geophysics_forward_plotting.core.models import DataContext, FigureResult, FigureTask, PlotStyle
@@ -38,7 +42,10 @@ class MultiMethodCompareSkill(BaseSkill):
         return TaskType(task.task_type) is TaskType.MULTI_METHOD_COMPARISON
 
     def run(self, task: FigureTask, context: DataContext) -> FigureResult:
-        arrays = list(context.raw_data)
+        arrays = [
+            to_vertical_first_2d(array, context.inferred_layout)
+            for array in context.raw_data
+        ]
         if not arrays:
             raise DataValidationError("MultiMethodCompareSkill 需要至少一个数组")
 
@@ -90,21 +97,25 @@ class MultiMethodCompareSkill(BaseSkill):
         dz = task.dz or task.dt or 1.0
         nt_or_nz, nx = arrays[0].shape
         ext = extent_from_task(nx=nx, ny=nt_or_nz, dx=dx, dy=dz, x0=task.x0, y0=task.z0)
+        xsample = np.arange(nx, dtype=float) * dx + task.x0
+        ysample = np.arange(nt_or_nz, dtype=float) * dz + task.z0
 
         last_im = None
         for idx, (arr, name) in enumerate(zip(arrays, names, strict=True)):
             row, col = divmod(idx, ncols)
             ax = axes[row][col]
-            im = imshow_panel(
+            im = cigvis_backend.plot2d_on_axes(
                 arr,
                 ax=ax,
                 extent=ext,
                 cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
+                clim=(vmin, vmax),
                 x_label=task.x_label or "",
                 y_label=task.y_label or "",
                 title=name,
+                xsample=xsample,
+                ysample=ysample,
+                downward=True,
             )
             last_im = im
 
@@ -116,14 +127,17 @@ class MultiMethodCompareSkill(BaseSkill):
 
         # 共享 colorbar
         if last_im is not None:
-            from geophysics_forward_plotting.core.defaults import COLORBAR_LABEL_FONT_SIZE, DEFAULT_FONT_SIZE
+            from geophysics_forward_plotting.core.defaults import (
+                COLORBAR_LABEL_FONT_SIZE,
+                DEFAULT_FONT_SIZE,
+            )
             cb = fig.colorbar(last_im, cax=cbar_ax)
             cb.set_label(task.colorbar_label or "Amplitude", fontsize=COLORBAR_LABEL_FONT_SIZE)
             cb.ax.tick_params(labelsize=DEFAULT_FONT_SIZE)
 
         from geophysics_forward_plotting.core.defaults import SUPTITLE_FONT_SIZE
         fig.suptitle(task.title, fontsize=SUPTITLE_FONT_SIZE)
-        fig.tight_layout(rect=[0, 0, 1, 0.96])  # 为 suptitle 留空间
+        fig.subplots_adjust(left=0.08, right=0.94, bottom=0.08, top=0.92)
         apply_publication_style(fig, style)
 
         saved = save_figure(
@@ -137,4 +151,10 @@ class MultiMethodCompareSkill(BaseSkill):
             figure=fig,
             saved_paths=saved,
             summary=f"多方法对比图已保存至 {[str(p) for p in saved]}",
+            metadata={
+                "expected_image_shapes": [array.shape for array in arrays],
+                "expected_y_direction": "down",
+                "shared_clim": True,
+                "clim": (vmin, vmax),
+            },
         )

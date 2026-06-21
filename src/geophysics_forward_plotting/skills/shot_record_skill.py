@@ -17,6 +17,7 @@ from geophysics_forward_plotting.backend import cigvis_backend
 from geophysics_forward_plotting.backend.adapters import (
     apply_publication_style,
     build_imshow_kwargs,
+    to_vertical_first_2d,
 )
 from geophysics_forward_plotting.core.conventions import CONVENTIONS
 from geophysics_forward_plotting.core.enums import TaskType
@@ -60,16 +61,18 @@ class ShotRecordSkill(BaseSkill):
 
         style = PlotStyle()
         cmap = effective_task.parameters.get("cmap", style.diverging_cmap)
+        data = to_vertical_first_2d(context.primary(), context.inferred_layout)
 
         kwargs = build_imshow_kwargs(
             effective_task,
             context,
             style,
+            data=data,
             override_cmap=cmap,
             symmetric=True,
         )
 
-        fig = cigvis_backend.plot2d_image(context.primary(), **kwargs)
+        fig = cigvis_backend.plot2d_image(data, **kwargs)
         apply_publication_style(fig, style)
 
         saved = save_figure(
@@ -84,4 +87,8 @@ class ShotRecordSkill(BaseSkill):
             figure=fig,
             saved_paths=saved,
             summary=f"炮记录已保存至 {[str(p) for p in saved]}",
+            metadata={
+                "expected_image_shapes": [data.shape],
+                "expected_y_direction": "down",
+            },
         )

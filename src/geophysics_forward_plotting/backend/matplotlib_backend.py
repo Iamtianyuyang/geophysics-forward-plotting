@@ -60,7 +60,7 @@ def bar_chart(
         edgecolor="#2c3e50", linewidth=0.6, zorder=3,
     )
 
-    for bar, val in zip(bars, values):
+    for bar, val in zip(bars, values, strict=True):
         label = f"{val:.3f} {unit}" if unit else f"{val:.3f}"
         ax.text(
             bar.get_x() + bar.get_width() / 2,

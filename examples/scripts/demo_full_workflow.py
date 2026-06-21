@@ -22,10 +22,10 @@ os.environ.setdefault("MPLBACKEND", "Agg")
 _repo = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(_repo / "src"))
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from geophysics_forward_plotting import PlottingAgent
-from geophysics_forward_plotting.core.models import DataContext, FigureTask
+from geophysics_forward_plotting import PlottingAgent  # noqa: E402
+from geophysics_forward_plotting.core.models import DataContext, FigureTask  # noqa: E402
 
 DATA_DIR = _repo / "examples" / "data"
 OUT_DIR  = _repo / "examples" / "outputs" / "forward"

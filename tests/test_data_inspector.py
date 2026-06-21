@@ -54,3 +54,36 @@ def test_data_inspector_loads_npy(tmp_path):
     assert ctx.shape == (60, 120)
     assert ctx.data_kind == DataKind.VELOCITY
     assert ctx.value_range == pytest.approx((2000.0, 2000.0))
+
+
+def test_data_inspector_enriches_direct_arrays_with_explicit_layout():
+    array = np.zeros((120, 300), dtype=np.float32)
+    context = DataContext(raw_data=(array,))
+    task = FigureTask(
+        task_type="shot_record",
+        parameters={"data_layout": "nx_nt"},
+    )
+
+    result = DataInspectorSkill().run(task, context)
+
+    inspected = result.metadata["context"]
+    assert inspected.raw_data[0] is array
+    assert inspected.inferred_layout is DataLayout.NX_NT
+
+
+def test_data_inspector_loads_binary_options_and_source_metadata(tmp_path):
+    array = np.arange(12, dtype=np.float32).reshape(3, 4)
+    path = tmp_path / "velocity.bin"
+    array.tofile(path)
+    task = FigureTask(
+        task_type="velocity_model",
+        data_paths=[path],
+        data_options={"shape": [3, 4], "data_layout": "nz_nx"},
+    )
+
+    result = DataInspectorSkill().run(task, DataContext())
+    inspected = result.metadata["context"]
+
+    np.testing.assert_array_equal(inspected.primary(), array)
+    assert inspected.inferred_layout is DataLayout.NZ_NX
+    assert inspected.metadata["format"] == "bin"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "CIGVis API Plotting"
+  short_description: "Route geophysical plots through public CIGVis APIs"
+  default_prompt: "Use $cigvis-api-plotting to choose the correct CIGVis API and verify axis order for this geophysical plot."

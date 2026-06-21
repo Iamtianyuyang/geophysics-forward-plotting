@@ -78,13 +78,12 @@ class PlottingAgent:
         context: DataContext | None = None,
     ) -> FigureResult:
         """执行任务并返回结果（含规范检查消息）。"""
-        # 先用 DataInspectorSkill 从 data_paths 加载数据（如果尚未提供）
-        if context is not None and context.raw_data:
-            ctx = context
-        else:
-            from geophysics_forward_plotting.skills.data_inspector_skill import DataInspectorSkill
-            insp_result = DataInspectorSkill().run(task, context or DataContext())
-            ctx = insp_result.metadata.get("context", context or DataContext())
+        # Always inspect: direct arrays also need a stable layout before rendering.
+        from geophysics_forward_plotting.skills.data_inspector_skill import DataInspectorSkill
+
+        source_context = context or DataContext()
+        insp_result = DataInspectorSkill().run(task, source_context)
+        ctx = insp_result.metadata.get("context", source_context)
 
         router = TaskRouter(self.registry)
         skill = router.route(task)
@@ -101,10 +100,6 @@ class PlottingAgent:
     def run_from_yaml(self, config_path: str | Path) -> FigureResult:
         """从 YAML 配置文件加载任务并执行。"""
         from geophysics_forward_plotting.agent.planner import Planner
-        from geophysics_forward_plotting.core.io import load_array
-        from geophysics_forward_plotting.core.models import DataContext
 
         task = Planner.from_yaml(config_path)
-        arrays = [load_array(p) for p in task.data_paths if p.exists()]
-        ctx = DataContext(raw_data=tuple(arrays))
-        return self.run(task, ctx)
+        return self.run(task)

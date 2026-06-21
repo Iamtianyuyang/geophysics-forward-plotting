@@ -8,6 +8,11 @@ from __future__ import annotations
 
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
+
+from geophysics_forward_plotting.core.enums import DataLayout
+from geophysics_forward_plotting.core.exceptions import DataValidationError
 from geophysics_forward_plotting.core.models import DataContext, FigureTask, PlotStyle
 from geophysics_forward_plotting.utils.axes import extent_from_task
 from geophysics_forward_plotting.utils.colors import pick_clim
@@ -18,6 +23,7 @@ def build_imshow_kwargs(
     context: DataContext,
     style: PlotStyle,
     *,
+    data: NDArray | None = None,
     override_cmap: str | None = None,
     symmetric: bool | None = None,
 ) -> dict[str, Any]:
@@ -29,11 +35,12 @@ def build_imshow_kwargs(
     """
     import numpy as np
 
-    data = context.primary()
+    data = context.primary() if data is None else data
     nt_or_nz, nx = data.shape
 
     dx = task.dx or 1.0
-    dy = task.dz or task.dt or 1.0
+    inferred_dt = context.metadata.get("sample_interval_s")
+    dy = task.dz or task.dt or inferred_dt or 1.0
     ext = extent_from_task(nx=nx, ny=nt_or_nz, dx=dx, dy=dy, x0=task.x0, y0=task.z0 or task.t0)
 
     sym = symmetric if symmetric is not None else (task.symmetric_clim is True)
@@ -63,15 +70,20 @@ def build_imshow_kwargs(
     }
 
 
-def build_wiggle_kwargs(task: FigureTask, style: PlotStyle) -> dict[str, Any]:
+def build_wiggle_kwargs(
+    task: FigureTask,
+    style: PlotStyle,
+    context: DataContext | None = None,
+) -> dict[str, Any]:
     """生成 wiggle_plot 所需的关键词参数。"""
     return {
-        "dt": task.dt or 0.002,
+        "dt": task.dt or (context.metadata.get("sample_interval_s") if context else None) or 0.002,
         "dx": task.dx or 1.0,
         "x0": task.x0,
         "t0": task.t0,
         "skip": int(task.parameters.get("skip", 1)),
         "gain": float(task.parameters.get("gain", 1.0)),
+        "scale": float(task.parameters.get("scale", 1.0)),
         "fill_positive": bool(task.parameters.get("fill_positive", True)),
         "x_label": task.x_label or "Distance (km)",
         "y_label": task.y_label or "Time (s)",
@@ -79,6 +91,77 @@ def build_wiggle_kwargs(task: FigureTask, style: PlotStyle) -> dict[str, Any]:
         "figsize": task.figure_size,
         "dpi": task.dpi,
     }
+
+
+def normalize_data_layout(layout: DataLayout | str | None, *, ndim: int) -> DataLayout:
+    """Resolve an explicit layout and apply this project's normalized defaults."""
+    if layout is None or layout == DataLayout.UNKNOWN or layout == "unknown":
+        return DataLayout.NZ_NY_NX if ndim == 3 else DataLayout.NZ_NX
+    try:
+        return DataLayout(layout)
+    except ValueError as exc:
+        raise DataValidationError(f"Unsupported data layout: {layout}") from exc
+
+
+def to_vertical_first_2d(data: NDArray, layout: DataLayout | str | None) -> NDArray:
+    """Return a 2D array as (vertical, horizontal), i.e. (nt/nz, nx)."""
+    if data.ndim != 2:
+        raise DataValidationError(f"Expected a 2D array, got shape={data.shape}")
+    resolved = normalize_data_layout(layout, ndim=2)
+    if resolved in (DataLayout.NX_NT, DataLayout.NX_NZ):
+        return data.T
+    if resolved in (DataLayout.NT_NX, DataLayout.NZ_NX):
+        return data
+    raise DataValidationError(f"Layout {resolved} is not a supported 2D image layout")
+
+
+def to_cigvis_volume(data: NDArray, layout: DataLayout | str | None) -> NDArray:
+    """Adapt a 3D volume to CIGVis line-first order: (x, y, z/time)."""
+    if data.ndim != 3:
+        raise DataValidationError(f"Expected a 3D volume, got shape={data.shape}")
+    resolved = normalize_data_layout(layout, ndim=3)
+    if resolved is DataLayout.NZ_NY_NX:
+        return np.transpose(data, (2, 1, 0))
+    if resolved is DataLayout.NX_NY_NZ:
+        return data
+    raise DataValidationError(f"Layout {resolved} is not a supported 3D volume layout")
+
+
+def to_cigvis_surface(data: NDArray, layout: DataLayout | str | None) -> NDArray:
+    """Adapt a horizon from (y, x) to the CIGVis (x, y) surface grid."""
+    if data.ndim != 2:
+        raise DataValidationError(f"Expected a 2D surface, got shape={data.shape}")
+    resolved = normalize_data_layout(layout, ndim=3)
+    return data.T if resolved is DataLayout.NZ_NY_NX else data
+
+
+def to_cigvis_position(
+    position: tuple[int, int, int] | list[int] | dict[str, Any] | None,
+    *,
+    shape: tuple[int, int, int],
+    layout: DataLayout | str | None,
+) -> dict[str, list[int]]:
+    """Convert native-layout slice indices to CIGVis x/y/z positions."""
+    resolved = normalize_data_layout(layout, ndim=3)
+    if position is None:
+        nz_or_nx, ny, nx_or_nz = shape
+        native = (nz_or_nx // 2, ny // 2, nx_or_nz // 2)
+    elif isinstance(position, dict):
+        return {
+            axis: ([int(value)] if np.isscalar(value) else [int(v) for v in value])
+            for axis, value in position.items()
+            if axis in {"x", "y", "z"}
+        }
+    else:
+        if len(position) != 3:
+            raise DataValidationError("3D slice position must contain three indices")
+        native = tuple(int(value) for value in position)
+
+    if resolved is DataLayout.NZ_NY_NX:
+        z, y, x = native
+    else:
+        x, y, z = native
+    return {"x": [x], "y": [y], "z": [z]}
 
 
 def apply_publication_style(fig: Any, style: PlotStyle) -> None:

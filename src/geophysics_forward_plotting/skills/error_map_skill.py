@@ -18,7 +18,10 @@ from __future__ import annotations
 import numpy as np
 
 from geophysics_forward_plotting.backend import cigvis_backend
-from geophysics_forward_plotting.backend.adapters import apply_publication_style
+from geophysics_forward_plotting.backend.adapters import (
+    apply_publication_style,
+    to_vertical_first_2d,
+)
 from geophysics_forward_plotting.core.enums import TaskType
 from geophysics_forward_plotting.core.exceptions import DataValidationError
 from geophysics_forward_plotting.core.models import DataContext, FigureResult, FigureTask, PlotStyle
@@ -45,8 +48,12 @@ class ErrorMapSkill(BaseSkill):
         if len(context.raw_data) < 2:
             raise DataValidationError("ErrorMapSkill 需要至少两个数组（预测值和参考值）")
 
-        pred = context.raw_data[0].astype(float)
-        ref = context.raw_data[1].astype(float)
+        pred = to_vertical_first_2d(
+            context.raw_data[0], context.inferred_layout
+        ).astype(float)
+        ref = to_vertical_first_2d(
+            context.raw_data[1], context.inferred_layout
+        ).astype(float)
 
         mode = task.parameters.get("error_mode", "signed")
         if mode == "signed":
@@ -68,9 +75,13 @@ class ErrorMapSkill(BaseSkill):
         vmin, vmax = pick_clim(err, symmetric=sym, clip_percentile=pct)
 
         dx = task.dx or 1.0
-        dz = task.dz or 1.0
+        is_time_axis = "time" in (task.y_label or "").lower()
+        dz = (task.dt if is_time_axis else task.dz) or task.dz or task.dt or 1.0
+        y0 = task.t0 if is_time_axis else task.z0
         nz, nx = err.shape
-        ext = extent_from_task(nx=nx, ny=nz, dx=dx, dy=dz, x0=task.x0, y0=task.z0)
+        ext = extent_from_task(nx=nx, ny=nz, dx=dx, dy=dz, x0=task.x0, y0=y0)
+        xsample = np.arange(nx, dtype=float) * dx + task.x0
+        ysample = np.arange(nz, dtype=float) * dz + y0
 
         label_map = {
             "signed": "Signed Error",
@@ -90,6 +101,9 @@ class ErrorMapSkill(BaseSkill):
             colorbar_label=colorbar_label,
             figsize=task.figure_size,
             dpi=task.dpi,
+            xsample=xsample,
+            ysample=ysample,
+            downward=True,
         )
         apply_publication_style(fig, style)
 
@@ -104,4 +118,9 @@ class ErrorMapSkill(BaseSkill):
             figure=fig,
             saved_paths=saved,
             summary=f"误差图（{mode}）已保存至 {[str(p) for p in saved]}",
+            metadata={
+                "expected_image_shapes": [err.shape],
+                "expected_y_direction": "down",
+                "error_mode": mode,
+            },
         )

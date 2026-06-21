@@ -69,6 +69,8 @@ Optional via `parameters`:
 
 ## Default Behavior
 
+- Render with `cigvis.plot2d` through the backend after normalizing to `(nz, nx)`.
+- Verify CIGVis preserved the spatial axes before adding the time annotation.
 - colormap: `seismic`
 - symmetric_clim: `True`
 - clip_percentile: 99.0

@@ -28,7 +28,13 @@ task = FigureTask(
     output_dir=OUT_DIR,
     symmetric_clim=True,
     clip_percentile=99.0,
-    parameters={"cmap": "gray", "slices": [15, 15, 30]},
+    parameters={
+        "data_layout": "nz_ny_nx",
+        "engine": "vispy",
+        "cmap": "gray",
+        "slices": [15, 15, 30],
+        "add_axis": True,
+    },
 )
 
 agent = PlottingAgent()

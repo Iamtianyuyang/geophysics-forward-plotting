@@ -73,6 +73,8 @@ Optional via `parameters`:
 
 ## Default Behavior
 
+- Render image-like errors with `cigvis.plot2d` through the backend and pass
+  physical x/y sampling, because CIGVis does not consume Matplotlib `extent`.
 - error_mode: `signed`
 - colormap: `seismic` (signed/relative), `viridis` (absolute)
 - clim: symmetric (signed/relative), asymmetric (absolute), 99th percentile

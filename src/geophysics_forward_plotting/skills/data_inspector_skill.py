@@ -2,24 +2,17 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import numpy as np
 
 from geophysics_forward_plotting.core.enums import DataKind, DataLayout, TaskType
 from geophysics_forward_plotting.core.exceptions import DataValidationError
+from geophysics_forward_plotting.core.io import load_array_with_metadata
 from geophysics_forward_plotting.core.models import (
     DataContext,
     FigureResult,
     FigureTask,
 )
 from geophysics_forward_plotting.skills.base import BaseSkill
-
-
-def _load_array(path: Path):
-    if not path.exists():
-        raise DataValidationError(f"数据文件不存在: {path}")
-    return np.load(path, allow_pickle=False)
 
 
 def _infer_layout(shape: tuple[int, ...], task_type: TaskType) -> DataLayout:
@@ -59,7 +52,7 @@ class DataInspectorSkill(BaseSkill):
     def __init__(self) -> None:
         super().__init__(
             name="data_inspector",
-            description="读取 .npy 数据文件，推断维度布局和物理含义",
+            description="读取 NPY/BIN/SEG-Y/SU 数据，推断维度布局和物理含义",
             priority=99,  # 低优先级——由 PlottingAgent 显式调用，而非路由选择
         )
 
@@ -67,10 +60,14 @@ class DataInspectorSkill(BaseSkill):
         return True  # 任何任务都需要先做数据检查
 
     def run(self, task: FigureTask, context: DataContext) -> FigureResult:
-        arrays = []
-        for path in task.data_paths:
-            arr = _load_array(Path(path))
-            arrays.append(arr)
+        arrays = list(context.raw_data)
+        source_metadata: list[dict] = []
+        if not arrays:
+            for index, path in enumerate(task.data_paths):
+                options = task.data_options[index] if task.data_options else {}
+                loaded = load_array_with_metadata(path, options)
+                arrays.append(loaded.data)
+                source_metadata.append(loaded.metadata)
 
         if not arrays:
             return FigureResult(
@@ -80,10 +77,35 @@ class DataInspectorSkill(BaseSkill):
 
         primary = arrays[0]
         shape = tuple(int(s) for s in primary.shape)
-        layout = _infer_layout(shape, TaskType(task.task_type))
+        explicit_layout = task.parameters.get("data_layout")
+        source_layout = source_metadata[0].get("data_layout") if source_metadata else None
+        if explicit_layout is not None:
+            try:
+                layout = DataLayout(explicit_layout)
+            except ValueError as exc:
+                raise DataValidationError(
+                    f"Unsupported data_layout={explicit_layout!r}"
+                ) from exc
+        elif source_layout is not None:
+            layout = DataLayout(source_layout)
+        elif context.inferred_layout is not DataLayout.UNKNOWN:
+            layout = context.inferred_layout
+        else:
+            layout = _infer_layout(shape, TaskType(task.task_type))
         kind = _infer_data_kind(TaskType(task.task_type))
         vmin = float(np.min(primary))
         vmax = float(np.max(primary))
+
+        metadata = dict(context.metadata)
+        if source_metadata:
+            metadata["sources"] = source_metadata
+            metadata.update(
+                {
+                    key: source_metadata[0][key]
+                    for key in ("format", "sample_interval_s", "sample_interval_us")
+                    if key in source_metadata[0]
+                }
+            )
 
         ctx = DataContext(
             raw_data=tuple(arrays),
@@ -92,7 +114,12 @@ class DataInspectorSkill(BaseSkill):
             inferred_layout=layout,
             data_kind=kind,
             value_range=(vmin, vmax),
-            dataset_names=tuple(str(p.stem) for p in task.data_paths),
+            dataset_names=(
+                context.dataset_names
+                or tuple(str(p.stem) for p in task.data_paths)
+                or tuple(f"array_{index}" for index in range(len(arrays)))
+            ),
+            metadata=metadata,
         )
 
         summary = (

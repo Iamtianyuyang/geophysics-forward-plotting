@@ -16,11 +16,7 @@ color normalization.
 ![Tests](https://img.shields.io/badge/tests-59%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Wiggle display](examples/outputs/wiggle.png)
-
-| Velocity Model | Shot Record | 3D Volume |
-|:-:|:-:|:-:|
-| ![Velocity Model](examples/outputs/velocity_model.png) | ![Shot Record](examples/outputs/shot_record.png) | ![3D Volume](examples/outputs/volume_3d.png) |
+![Gallery](examples/outputs/gallery.png)
 
 This project is built on [CIGVis](https://github.com/JintaoLee-Roger/cigvis).
 CIGVis supplies the geophysical 1D, 2D, 3D, and interactive visualization

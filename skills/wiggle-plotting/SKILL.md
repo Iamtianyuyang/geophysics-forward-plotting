@@ -67,6 +67,10 @@ Optional via `parameters`:
 
 ## Default Behavior
 
+- Prefer `cigvis.plot_multi_traces` through `CigvisBackend`; use Matplotlib only
+  when CIGVis is unavailable.
+- Interpret CIGVis `beg` as the time/depth origin, then replace ordinal trace
+  labels with `x0 + original_trace_index * dx`.
 - skip: 1 (show all traces)
 - gain: 1.0
 - fill_positive: True

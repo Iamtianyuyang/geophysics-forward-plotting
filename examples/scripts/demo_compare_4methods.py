@@ -38,7 +38,12 @@ task = FigureTask(
     task_type="multi_method_comparison",
     title="Wavefield Comparison at $t$ = 500 ms",
     output_dir=OUT_DIR,
-    method_names=("(a) Pseudo-Spectral", "(b) Deepwave", "(c) Coarse ($\\Delta x$ = 20 m)", "(d) Smoothed"),
+    method_names=(
+        "(a) Pseudo-Spectral",
+        "(b) Deepwave",
+        "(c) Coarse ($\\Delta x$ = 20 m)",
+        "(d) Smoothed",
+    ),
     dx=0.01,
     dz=0.01,
     x_label="Distance (km)",

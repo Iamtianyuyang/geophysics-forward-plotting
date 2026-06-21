@@ -82,11 +82,33 @@ def test_cli_render(tmp_path, capsys):
     assert code == 0
 
 
+def test_cli_render_raw_binary_with_data_options(tmp_path):
+    data = np.full((20, 30), 2200.0, dtype=np.float32)
+    binary = tmp_path / "velocity.bin"
+    data.tofile(binary)
+    cfg = tmp_path / "render-bin.yaml"
+    cfg.write_text(
+        f"task_type: velocity_model\n"
+        f"data_paths: [{binary}]\n"
+        "data_options:\n"
+        "  shape: [20, 30]\n"
+        "  dtype: float32\n"
+        "  endianness: native\n"
+        "  data_layout: nz_nx\n"
+        f"output_dir: {tmp_path}\n"
+        "dx: 0.025\ndz: 0.025\ndpi: 72\n"
+        "export_formats: [png]\n"
+    )
+
+    assert app(["render", str(cfg)]) == 0
+    assert (tmp_path / "velocity_model.png").is_file()
+
+
 def test_cli_agent_skills_validate(capsys):
     code = app(["agent-skills", "validate"])
 
     assert code == 0
-    assert "13 Agent Skills are valid" in capsys.readouterr().out
+    assert "14 Agent Skills are valid" in capsys.readouterr().out
 
 
 def test_cli_agent_skills_install(tmp_path, capsys):
@@ -103,4 +125,4 @@ def test_cli_agent_skills_install(tmp_path, capsys):
 
     assert code == 0
     assert (tmp_path / ".agents" / "skills" / "shot-record-plotting" / "SKILL.md").is_file()
-    assert "Installed 13 skill copies" in capsys.readouterr().out
+    assert "Installed 14 skill copies" in capsys.readouterr().out

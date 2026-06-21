@@ -8,8 +8,15 @@ clip_percentile: 99.0
 export_formats:
   - png
 parameters:
+  data_layout: nz_ny_nx
+  engine: vispy
   cmap: gray
+  add_axis: true
+  save_static: true
+  # Native-layout indices: [z, y, x]. A {x, y, z} mapping is also accepted.
   slices:
     - 15
     - 15
     - 30
+  view:
+    size: [800, 600]

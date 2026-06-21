@@ -52,8 +52,10 @@ def _make_sponge(nz: int, nx: int, width: int = 30) -> NDArray:
     s = np.ones((nz, nx), dtype=np.float32)
     for i in range(width):
         val = float(np.exp(-((0.015 * (width - i)) ** 2)))
-        s[i, :] *= val; s[-(i + 1), :] *= val
-        s[:, i] *= val; s[:, -(i + 1)] *= val
+        s[i, :] *= val
+        s[-(i + 1), :] *= val
+        s[:, i] *= val
+        s[:, -(i + 1)] *= val
     return s
 
 
@@ -143,7 +145,8 @@ def make_method_results(nz: int = 200, nx: int = 400) -> list[NDArray]:
     # Deepwave standard (same grid, slightly different due to numerics)
     # Approximate by adding small perturbation to represent numerical difference
     rng = np.random.default_rng(42)
-    deepwave_approx = base + rng.normal(0, 0.001 * np.abs(base).max(), base.shape).astype(np.float32)
+    perturbation = rng.normal(0, 0.001 * np.abs(base).max(), base.shape)
+    deepwave_approx = base + perturbation.astype(np.float32)
 
     # Coarse: downsample + upsample
     coarse = base[::2, ::2]
@@ -181,7 +184,7 @@ def ensure_example_data(data_dir: Path) -> None:
                     "method_coarse.npy", "method_smooth.npy"]
     if not any((data_dir / n).exists() for n in method_names):
         methods = make_method_results()
-        for name, arr in zip(method_names, methods):
+        for name, arr in zip(method_names, methods, strict=True):
             specs[name] = arr
 
     for filename, arr in specs.items():

@@ -35,6 +35,35 @@ pip install cigvis
 gfp data examples/data
 ```
 
+## Load BIN, SEG-Y, and SU
+
+Raw binary input must declare its storage contract:
+
+```yaml
+task_type: shot_record
+data_paths: [data/shot.bin]
+data_options:
+  shape: [2000, 240]
+  dtype: float32
+  endianness: little
+  order: C
+  data_layout: nt_nx
+```
+
+SEG-Y and SU use the optional `segyio` dependency. The default output is
+`(samples, traces)`, which maps directly to `nt_nx` for shot records:
+
+```yaml
+task_type: shot_record
+data_paths: [data/shot.sgy]
+data_options:
+  output_layout: samples_traces
+  ignore_geometry: true
+```
+
+The loader records `sample_interval_us` and `sample_interval_s`; shot-record and
+wiggle axes use the header interval when `dt` is not explicitly configured.
+
 ## Python API
 
 ### Velocity Model

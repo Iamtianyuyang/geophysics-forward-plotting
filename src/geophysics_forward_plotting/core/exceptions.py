@@ -24,3 +24,6 @@ class SkillNotFoundError(GeophysicsForwardPlottingError):
 class BackendUnavailableError(GeophysicsForwardPlottingError):
     """Raised when an explicitly requested backend is unavailable."""
 
+
+class BackendRenderError(GeophysicsForwardPlottingError):
+    """Raised when an available backend rejects a rendering request."""

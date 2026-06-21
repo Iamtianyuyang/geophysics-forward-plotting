@@ -59,10 +59,11 @@ are ignored by Git in this repository.
 ## Agent Workflow
 
 1. Read `geophysics-forward-plotting` to route the request.
-2. Read one specialized plotting or method-evaluation skill.
-3. Read `data-inspector` when layout or physical metadata is uncertain.
-4. Execute through the Python package or `gfp` CLI.
-5. Apply `figure-review` before export and completion.
+2. Read `cigvis-api-plotting` for API selection and axis-order conversion.
+3. Read one specialized plotting or method-evaluation skill.
+4. Read `data-inspector` when layout or physical metadata is uncertain.
+5. Execute through the Python package or `gfp` CLI.
+6. Apply `figure-review` before export and completion.
 
 The text skills guide coding agents; executable classes under
 `src/geophysics_forward_plotting/skills/` perform deterministic plotting and review.
