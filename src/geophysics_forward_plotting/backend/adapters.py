@@ -73,19 +73,75 @@ def build_wiggle_kwargs(task: FigureTask, style: PlotStyle) -> dict[str, Any]:
 
 def apply_publication_style(fig: Any, style: PlotStyle) -> None:
     """
-    将论文风格参数应用到 matplotlib Figure 上。
+    将统一论文风格应用到 matplotlib Figure 上。
 
-    只有 matplotlib Figure 才支持此操作；cigvis 3D canvas 忽略此调用。
+    统一字体、字号、间距，确保所有图件视觉一致。
     """
     try:
         import matplotlib as mpl
 
+        from geophysics_forward_plotting.core.defaults import (
+            ANNOTATION_FONT_SIZE,
+            COLORBAR_LABEL_FONT_SIZE,
+            LABEL_FONT_SIZE,
+            SUPTITLE_FONT_SIZE,
+            TITLE_FONT_SIZE,
+        )
+
+        # 全局字体设置
         mpl.rcParams["font.family"] = style.font_name
         mpl.rcParams["font.size"] = style.font_size
         mpl.rcParams["lines.linewidth"] = style.line_width
         mpl.rcParams["axes.linewidth"] = style.axis_line_width
+
         for ax in fig.axes:
-            ax.tick_params(width=style.axis_line_width)
+            # Tick
+            ax.tick_params(
+                width=style.axis_line_width,
+                labelsize=style.font_size,
+                pad=4,
+            )
+            # 坐标轴标签
+            ax.xaxis.label.set_size(LABEL_FONT_SIZE)
+            ax.yaxis.label.set_size(LABEL_FONT_SIZE)
+            ax.xaxis.labelpad = 6
+            ax.yaxis.labelpad = 6
+
+            # 子图标题
+            title = ax.get_title()
+            if title:
+                ax.set_title(title, fontsize=TITLE_FONT_SIZE, pad=8)
+
+        # 总标题
+        if fig._suptitle is not None:
+            fig._suptitle.set_fontsize(SUPTITLE_FONT_SIZE)
+
+        # 色条标签和 tick
+        for ax in fig.axes:
+            if hasattr(ax, "yaxis") and ax.get_label().get_text():
+                # 色条 axes 的 label
+                ax.yaxis.label.set_size(COLORBAR_LABEL_FONT_SIZE)
+            # 通过检查是否有 colorbar 的 axes 来设置色条 tick
+            if hasattr(ax, "collections") or (hasattr(ax, "get_images") and ax.get_images()):
+                pass  # 不是色条
+
+        # 色条 tick 大小
+        for cb_ax in [ax for ax in fig.axes if _is_colorbar_ax(ax)]:
+            cb_ax.tick_params(labelstyle="normal", labelsize=style.font_size)
+
     except Exception:
-        # 非 matplotlib Figure（如 cigvis canvas）直接跳过
         pass
+
+
+def _is_colorbar_ax(ax: Any) -> bool:
+    """启发式判断 axes 是否是 colorbar。"""
+    try:
+        # colorbar axes 通常没有 images 也没有 title，但有 yaxis
+        return (
+            not ax.get_images()
+            and not ax.get_title()
+            and not ax.get_xlabel()
+            and hasattr(ax, "_colorbar_info")
+        )
+    except Exception:
+        return False

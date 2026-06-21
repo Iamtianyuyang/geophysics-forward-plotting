@@ -117,9 +117,10 @@ class MultiMethodCompareSkill(BaseSkill):
         # 共享 colorbar
         if last_im is not None:
             cb = fig.colorbar(last_im, cax=cbar_ax)
-            cb.set_label(task.colorbar_label or "Amplitude")
+            cb.set_label(task.colorbar_label or "Amplitude", fontsize=11)
+            cb.ax.tick_params(labelsize=10)
 
-        fig.suptitle(task.title, fontsize=style.font_size + 1)
+        fig.suptitle(task.title, fontsize=14)
         fig.tight_layout()
         apply_publication_style(fig, style)
 

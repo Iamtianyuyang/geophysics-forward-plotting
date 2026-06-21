@@ -40,18 +40,22 @@ def bar_chart(
     dpi: int = 600,
 ) -> Any:
     """绘制单系列柱状图，适合时间/内存/加速比对比。"""
+    from geophysics_forward_plotting.core.defaults import (
+        LABEL_FONT_SIZE,
+        SUPTITLE_FONT_SIZE,
+        TITLE_FONT_SIZE,
+    )
+
     plt = _get_mpl()
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     x = np.arange(len(categories))
 
-    # 渐变色柱体
     colors = plt.cm.Blues(np.linspace(0.4, 0.85, len(categories)))
     bars = ax.bar(
         x, values, width=0.55, color=colors,
         edgecolor="#2c3e50", linewidth=0.6, zorder=3,
     )
 
-    # 数值标注
     for bar, val in zip(bars, values):
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -63,13 +67,13 @@ def bar_chart(
 
     ax.set_xticks(x)
     ax.set_xticklabels(categories, fontsize=10, fontweight="bold")
-    ax.set_ylabel(ylabel, fontsize=11)
-    ax.set_title(title, fontsize=12, fontweight="bold", pad=14)
+    ax.set_ylabel(ylabel, fontsize=LABEL_FONT_SIZE)
+    ax.set_title(title, fontsize=TITLE_FONT_SIZE, pad=14)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
     ax.spines["left"].set_linewidth(0.6)
     ax.spines["bottom"].set_linewidth(0.6)
-    ax.tick_params(width=0.6, labelsize=9)
+    ax.tick_params(width=0.6, labelsize=10)
     ax.set_ylim(0, max(values) * 1.22)
     ax.grid(axis="y", alpha=0.25, linestyle="--", color="#7f8c8d", zorder=0)
     ax.set_axisbelow(True)
@@ -129,6 +133,8 @@ def wiggle_plot(
     data: (nt, nx) 数组，时间在第 0 轴，道在第 1 轴。
     y 轴向下（时间增大向下）。
     """
+    from geophysics_forward_plotting.core.defaults import LABEL_FONT_SIZE, TITLE_FONT_SIZE
+
     plt = _get_mpl()
     nt, nx = data.shape
     t = t0 + np.arange(nt) * dt
@@ -137,7 +143,6 @@ def wiggle_plot(
     for ix in range(0, nx, skip):
         x_center = x0 + ix * dx
         trace = gain * data[:, ix]
-        # x 轴位置 = 道中心 + 归一化振幅 * 道间距
         scale = dx * 0.9 / (np.max(np.abs(trace)) + 1e-9)
         xvals = x_center + trace * scale
         ax.plot(xvals, t, color=color, linewidth=0.5)
@@ -145,10 +150,11 @@ def wiggle_plot(
             ax.fill_betweenx(t, x_center, xvals, where=(xvals > x_center), color=color, alpha=0.8)
 
     ax.set_xlim(x0 - dx, x0 + nx * dx)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    ax.set_title(title)
-    ax.invert_yaxis()  # 时间向下
+    ax.set_xlabel(x_label, fontsize=LABEL_FONT_SIZE)
+    ax.set_ylabel(y_label, fontsize=LABEL_FONT_SIZE)
+    ax.set_title(title, fontsize=TITLE_FONT_SIZE, pad=8)
+    ax.tick_params(labelsize=10)
+    ax.invert_yaxis()
     return fig
 
 
@@ -165,6 +171,8 @@ def imshow_panel(
     title: str = "",
 ) -> Any:
     """在已有 Axes 上绘制图像，返回 AxesImage（供共享 colorbar 使用）。"""
+    from geophysics_forward_plotting.core.defaults import LABEL_FONT_SIZE, TITLE_FONT_SIZE
+
     im = ax.imshow(
         data,
         aspect="auto",
@@ -174,7 +182,8 @@ def imshow_panel(
         extent=extent,
         origin="upper",
     )
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    ax.set_title(title)
+    ax.set_xlabel(x_label, fontsize=LABEL_FONT_SIZE)
+    ax.set_ylabel(y_label, fontsize=LABEL_FONT_SIZE)
+    ax.set_title(title, fontsize=TITLE_FONT_SIZE, pad=6)
+    ax.tick_params(labelsize=10)
     return im
