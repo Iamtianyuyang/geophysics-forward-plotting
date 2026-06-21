@@ -1,15 +1,16 @@
+# 四方法对比 — 双栏图 (170 mm)
 task_type: multi_method_comparison
-title: "Wavefield Comparison at t = 500 ms"
+title: "Wavefield Comparison at $t$ = 500 ms"
 data_paths:
   - examples/data/method_ps_ref.npy
   - examples/data/method_deepwave.npy
   - examples/data/method_coarse.npy
   - examples/data/method_smooth.npy
 method_names:
-  - Pseudo-Spectral
-  - Deepwave
-  - Coarse
-  - Smoothed
+  - "(a) Pseudo-Spectral"
+  - "(b) Deepwave"
+  - "(c) Coarse ($\\Delta x$ = 20 m)"
+  - "(d) Smoothed"
 output_dir: examples/outputs
 dx: 0.01
 dz: 0.01
@@ -17,13 +18,13 @@ x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
 y_label: "Depth (km)"
-colorbar_label: "Amplitude"
+colorbar_label: "Pressure (Pa)"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [8.0, 6.0]
-dpi: 300
+figure_size: [7.0, 5.5]
+dpi: 600
 export_formats:
-  - png
   - pdf
+  - png
 parameters:
   cmap: seismic

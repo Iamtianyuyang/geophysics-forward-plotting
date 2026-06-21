@@ -1,19 +1,20 @@
+# 速度模型 — 单栏图 (85 mm)
 task_type: velocity_model
-title: "Synthetic Velocity Model"
+title: "Velocity Model"
 data_paths:
   - examples/data/velocity_model.npy
 output_dir: examples/outputs
-dx: 0.01
-dz: 0.01
+dx: 0.01        # km (10 m grid)
+dz: 0.01        # km
 x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
 y_label: "Depth (km)"
-colorbar_label: "Velocity (m/s)"
-figure_size: [8.0, 5.0]
-dpi: 300
+colorbar_label: "Velocity (m s$^{-1}$)"
+figure_size: [3.5, 2.8]
+dpi: 600
 export_formats:
-  - png
   - pdf
+  - png
 parameters:
   cmap: jet

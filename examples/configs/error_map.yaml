@@ -1,5 +1,6 @@
+# 误差图 — 1.5 栏图 (140 mm)
 task_type: error_map
-title: "Signed Residual: FD-fine vs Smoothed"
+title: "Signed Residual"
 data_paths:
   - examples/data/shot_record.npy
   - examples/data/shot_smooth.npy
@@ -8,14 +9,15 @@ dx: 0.01
 dz: 0.001
 x0: 0.0
 t0: 0.0
-x_label: "Distance (km)"
+x_label: "Offset (km)"
 y_label: "Time (s)"
-colorbar_label: "Signed Residual"
+colorbar_label: "Residual (Pa)"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [8.0, 6.0]
-dpi: 300
+figure_size: [5.5, 4.0]
+dpi: 600
 export_formats:
+  - pdf
   - png
 parameters:
   error_mode: signed

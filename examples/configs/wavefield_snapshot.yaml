@@ -1,5 +1,6 @@
+# 波场快照 — 单栏图 (85 mm)
 task_type: wavefield_snapshot
-title: "Acoustic Wavefield Snapshot"
+title: "Acoustic Wavefield"
 data_paths:
   - examples/data/snap_500ms.npy
 output_dir: examples/outputs
@@ -9,12 +10,13 @@ x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
 y_label: "Depth (km)"
-colorbar_label: "Amplitude"
+colorbar_label: "Pressure (Pa)"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [8.0, 5.0]
-dpi: 300
+figure_size: [3.5, 2.8]
+dpi: 600
 export_formats:
+  - pdf
   - png
 parameters:
   cmap: seismic

@@ -1,5 +1,6 @@
+# 波形图 — 1.5 栏图 (140 mm)
 task_type: wiggle
-title: "Wiggle Display"
+title: "Seismic Wiggle Display"
 data_paths:
   - examples/data/shot_record.npy
 output_dir: examples/outputs
@@ -7,11 +8,12 @@ dt: 0.001
 dx: 0.01
 x0: 0.0
 t0: 0.0
-x_label: "Distance (km)"
+x_label: "Offset (km)"
 y_label: "Time (s)"
-figure_size: [10.0, 6.0]
-dpi: 300
+figure_size: [5.5, 4.0]
+dpi: 600
 export_formats:
+  - pdf
   - png
 parameters:
   skip: 10

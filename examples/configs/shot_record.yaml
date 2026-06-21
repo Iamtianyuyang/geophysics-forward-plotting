@@ -1,20 +1,22 @@
+# 炮记录 — 1.5 栏图 (140 mm)
 task_type: shot_record
-title: "Shot Record (deepwave acoustic)"
+title: "Synthetic Shot Record"
 data_paths:
   - examples/data/shot_record.npy
 output_dir: examples/outputs
-dt: 0.001
-dx: 0.01
+dt: 0.001       # s
+dx: 0.01        # km
 x0: 0.0
 t0: 0.0
-x_label: "Distance (km)"
+x_label: "Offset (km)"
 y_label: "Time (s)"
 colorbar_label: "Amplitude"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [8.0, 6.0]
-dpi: 300
+figure_size: [5.5, 4.0]
+dpi: 600
 export_formats:
+  - pdf
   - png
 parameters:
   cmap: seismic
