@@ -187,15 +187,15 @@ def deepwave_forward(
     """
     deepwave 声波正演，返回炮记录和波场快照。
 
-    通过 forward_callback 在指定时间步保存波场快照。
+    通过 forward_callback 在指定时间步保存压力场快照。
     """
     import torch
     import deepwave as dw
 
     nz, nx = vel.shape
-    vel_t = torch.from_numpy(vel.copy()).unsqueeze(0)
-    rho_t = torch.ones(1, nz, nx) * 1000.0
-    model = dw.Acoustic(vel_t, rho_t, grid_spacing=dx)
+    vel_t = torch.from_numpy(vel.copy())
+    rho_t = torch.ones(nz, nx) * 1000.0
+    prop = dw.Acoustic(vel_t, rho_t, grid_spacing=dx)
 
     src_amp = dw.wavelets.ricker(f0, nt, dt, 1.5 / f0).reshape(1, 1, -1)
     src_loc = torch.tensor([[[src_z, src_x]]])
@@ -206,17 +206,14 @@ def deepwave_forward(
     snapshots: dict[int, NDArray] = {}
 
     def callback(state):
-        it = state.step
-        if it in snap_set:
-            wf = state.get_wavefield()
-            if isinstance(wf, torch.Tensor):
-                wf_np = wf.detach().cpu().numpy()
-                if wf_np.ndim == 3:
-                    snapshots[it] = wf_np[0, pml:pml+nz, pml:pml+nx].copy()
-                elif wf_np.ndim == 2:
-                    snapshots[it] = wf_np[pml:pml+nz, pml:pml+nx].copy()
+        step = state.step
+        if step in snap_set:
+            wf = state.get_wavefield("pressure_0")
+            if wf.numel() > 0:
+                snap = wf[0].detach().cpu().numpy() if wf.ndim == 3 else wf.detach().cpu().numpy()
+                snapshots[step] = snap.copy()
 
-    out = model(
+    out = prop(
         dt=dt,
         source_amplitudes_p=src_amp,
         source_locations_p=src_loc,
@@ -229,24 +226,6 @@ def deepwave_forward(
     # 炮记录: out[7] shape (1, n_rec, nt) → (nt, n_rec)
     shot = out[7][0].numpy().T.astype(np.float32)
     return shot, snapshots
-
-
-def deepwave_wavefield_at(
-    vel: NDArray,
-    src_x: int,
-    src_z: int,
-    target_it: int,
-    dx: float = DX,
-    dt: float = DT,
-    nt: int = NT,
-    f0: float = F0,
-) -> NDArray:
-    """运行 deepwave 并返回指定时间步的波场快照 (nz, nx)。"""
-    _, snaps = deepwave_forward(
-        vel, src_x, src_z, dx=dx, dt=dt, nt=nt, f0=f0,
-        snap_its=(target_it,),
-    )
-    return snaps[target_it]
 
 
 # ─── 辅助 ────────────────────────────────────────────────────
