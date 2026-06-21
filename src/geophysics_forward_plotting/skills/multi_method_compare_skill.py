@@ -63,11 +63,28 @@ class MultiMethodCompareSkill(BaseSkill):
         ncols = 2 if n <= 2 else 2
         nrows = 1 if n <= 2 else 2
         fw, fh = task.figure_size
-        fig_w = fw * ncols
+        fig_w = fw * ncols + 1.2   # 为 colorbar 预留空间
         fig_h = fh * nrows
 
         plt = _get_mpl()
-        fig, axes = plt.subplots(nrows, ncols, figsize=(fig_w, fig_h), dpi=task.dpi, squeeze=False)
+
+        # 用 GridSpec 预留 colorbar 列，避免 tight_layout 后叠加
+        gs = plt.GridSpec(
+            nrows, ncols + 1,
+            width_ratios=[1] * ncols + [0.05],
+            wspace=0.3, hspace=0.35,
+        )
+        fig = plt.figure(figsize=(fig_w, fig_h), dpi=task.dpi)
+
+        axes = []
+        for r in range(nrows):
+            row_axes = []
+            for c in range(ncols):
+                row_axes.append(fig.add_subplot(gs[r, c]))
+            axes.append(row_axes)
+
+        # 创建 colorbar 专用 axes — 跨所有行的最后一列
+        cbar_ax = fig.add_subplot(gs[:, -1])
 
         dx = task.dx or 1.0
         dz = task.dz or task.dt or 1.0
@@ -97,15 +114,13 @@ class MultiMethodCompareSkill(BaseSkill):
             row, col = divmod(idx, ncols)
             axes[row][col].set_visible(False)
 
+        # 共享 colorbar
+        if last_im is not None:
+            cb = fig.colorbar(last_im, cax=cbar_ax)
+            cb.set_label(task.colorbar_label or "Amplitude")
+
         fig.suptitle(task.title, fontsize=style.font_size + 1)
         fig.tight_layout()
-
-        # 共享 colorbar（右侧一个），tight_layout 之后再添加避免重叠
-        if last_im is not None:
-            cb = fig.colorbar(last_im, ax=axes.ravel().tolist(), shrink=0.8, pad=0.02)
-            cb.set_label(task.colorbar_label or "Amplitude")
-            # 为 colorbar 腾出空间
-            fig.subplots_adjust(right=0.88)
         apply_publication_style(fig, style)
 
         saved = save_figure(
