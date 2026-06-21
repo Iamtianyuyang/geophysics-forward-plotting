@@ -75,7 +75,7 @@ def apply_publication_style(fig: Any, style: PlotStyle) -> None:
     """
     将统一论文风格应用到 matplotlib Figure 上。
 
-    统一字体、字号、间距，确保所有图件视觉一致。
+    字体：Times New Roman (serif) — Geophysics/GJI/SEG 等期刊标准。
     """
     try:
         import matplotlib as mpl
@@ -83,13 +83,18 @@ def apply_publication_style(fig: Any, style: PlotStyle) -> None:
         from geophysics_forward_plotting.core.defaults import (
             ANNOTATION_FONT_SIZE,
             COLORBAR_LABEL_FONT_SIZE,
+            DEFAULT_FONT_FAMILY_SANS,
+            DEFAULT_FONT_FAMILY_SERIF,
             LABEL_FONT_SIZE,
             SUPTITLE_FONT_SIZE,
             TITLE_FONT_SIZE,
         )
 
-        # 全局字体设置
-        mpl.rcParams["font.family"] = style.font_name
+        # 全局字体 — serif 为主 (Times New Roman)，sans-serif 为辅 (Arial)
+        mpl.rcParams["font.family"] = "serif"
+        mpl.rcParams["font.serif"] = DEFAULT_FONT_FAMILY_SERIF
+        mpl.rcParams["font.sans-serif"] = DEFAULT_FONT_FAMILY_SANS
+        mpl.rcParams["mathtext.fontset"] = "stix"  # 数学公式用 STIX
         mpl.rcParams["font.size"] = style.font_size
         mpl.rcParams["lines.linewidth"] = style.line_width
         mpl.rcParams["axes.linewidth"] = style.axis_line_width

@@ -5,7 +5,11 @@ DEFAULT_FIGURE_SIZE = (7.0, 4.5)
 DEFAULT_EXPORT_FORMATS = ("png",)
 
 # ── 统一字体 ──────────────────────────────────────────────────
-DEFAULT_FONT_NAME = "DejaVu Sans"
+# 论文标准: serif=Times New Roman (Geophysics/GJI/SEG 等期刊默认)
+# 备选 sans-serif=Arial (Nature/Science), 中文=Noto Serif SC
+DEFAULT_FONT_NAME = "serif"
+DEFAULT_FONT_FAMILY_SERIF = ["Times New Roman", "STIXGeneral", "DejaVu Serif"]
+DEFAULT_FONT_FAMILY_SANS = ["Arial", "Helvetica", "DejaVu Sans"]
 DEFAULT_FONT_SIZE = 10.0          # 基准字号（tick / colorbar tick）
 TITLE_FONT_SIZE = 13.0            # 子图标题
 LABEL_FONT_SIZE = 11.0            # 坐标轴标签
