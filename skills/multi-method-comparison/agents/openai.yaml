@@ -1,0 +1,4 @@
+interface:
+  display_name: "Multi Method Comparison"
+  short_description: "Help with Multi Method Comparison tasks"
+  default_prompt: "Use $multi-method-comparison to handle this geophysical plotting task according to its scientific conventions."

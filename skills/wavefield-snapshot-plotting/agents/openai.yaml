@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wavefield Snapshot Plotting"
+  short_description: "Help with Wavefield Snapshot Plotting tasks"
+  default_prompt: "Use $wavefield-snapshot-plotting to handle this geophysical plotting task according to its scientific conventions."

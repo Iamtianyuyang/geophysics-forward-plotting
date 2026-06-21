@@ -1,0 +1,19 @@
+task_type: wiggle
+title: "Wiggle Display – Synthetic Shot Record"
+data_paths:
+  - examples/data/shot_record.npy
+output_dir: examples/outputs
+dt: 0.002
+dx: 0.025
+x0: 0.0
+t0: 0.0
+x_label: "Receiver position (km)"
+y_label: "Time (s)"
+figure_size: [7.0, 6.0]
+dpi: 600
+export_formats:
+  - png
+parameters:
+  skip: 3
+  gain: 2.0
+  fill_positive: true

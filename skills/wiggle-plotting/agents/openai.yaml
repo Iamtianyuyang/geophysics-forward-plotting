@@ -1,0 +1,4 @@
+interface:
+  display_name: "Wiggle Plotting"
+  short_description: "Help with Wiggle Plotting tasks"
+  default_prompt: "Use $wiggle-plotting to handle this geophysical plotting task according to its scientific conventions."

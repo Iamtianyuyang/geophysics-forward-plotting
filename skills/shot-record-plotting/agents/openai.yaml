@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shot Record Plotting"
+  short_description: "Help with Shot Record Plotting tasks"
+  default_prompt: "Use $shot-record-plotting to handle this geophysical plotting task according to its scientific conventions."

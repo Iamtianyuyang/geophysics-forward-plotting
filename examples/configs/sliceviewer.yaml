@@ -1,0 +1,9 @@
+task_type: sliceviewer
+title: "Interactive SliceViewer"
+data_paths:
+  - examples/data/volume_3d.npy
+output_dir: examples/outputs
+symmetric_clim: false
+clip_percentile: 99.0
+parameters:
+  cmap: gray

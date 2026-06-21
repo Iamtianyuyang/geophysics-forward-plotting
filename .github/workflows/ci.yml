@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev,plot]"
+
+      - name: Lint with ruff
+        run: |
+          ruff check src/ tests/
+
+      - name: Validate Agent Skills catalog
+        run: |
+          python scripts/manage_agent_skills.py validate
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Check imports
+        run: |
+          python -c "from geophysics_forward_plotting import PlottingAgent, SkillRegistry, FigureTask, FigureResult; print('imports OK')"
+          python -c "from geophysics_forward_plotting import PlottingAgent; a = PlottingAgent(); print('skills:', a.available_skills())"

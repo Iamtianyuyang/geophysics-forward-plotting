@@ -1,0 +1,4 @@
+interface:
+  display_name: "Method Evaluation"
+  short_description: "Help with Method Evaluation tasks"
+  default_prompt: "Use $method-evaluation to handle this geophysical plotting task according to its scientific conventions."

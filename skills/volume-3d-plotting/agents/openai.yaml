@@ -1,0 +1,4 @@
+interface:
+  display_name: "Volume 3d Plotting"
+  short_description: "Help with Volume 3d Plotting tasks"
+  default_prompt: "Use $volume-3d-plotting to handle this geophysical plotting task according to its scientific conventions."

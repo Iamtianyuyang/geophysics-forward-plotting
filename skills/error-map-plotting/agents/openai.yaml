@@ -1,0 +1,4 @@
+interface:
+  display_name: "Error Map Plotting"
+  short_description: "Help with Error Map Plotting tasks"
+  default_prompt: "Use $error-map-plotting to handle this geophysical plotting task according to its scientific conventions."

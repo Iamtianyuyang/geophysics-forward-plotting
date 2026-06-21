@@ -1,0 +1,14 @@
+name: geophysics-forward-plotting
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy>=1.24
+  - pyyaml>=6.0
+  - matplotlib>=3.7
+  - pytest>=8.0
+  - pytest-cov>=5.0
+  - ruff>=0.5
+  - pip:
+      - -e .

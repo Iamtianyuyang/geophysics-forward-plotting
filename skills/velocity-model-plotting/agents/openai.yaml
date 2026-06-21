@@ -1,0 +1,4 @@
+interface:
+  display_name: "Velocity Model Plotting"
+  short_description: "Help with Velocity Model Plotting tasks"
+  default_prompt: "Use $velocity-model-plotting to handle this geophysical plotting task according to its scientific conventions."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figure Review"
+  short_description: "Help with Figure Review tasks"
+  default_prompt: "Use $figure-review to handle this geophysical plotting task according to its scientific conventions."

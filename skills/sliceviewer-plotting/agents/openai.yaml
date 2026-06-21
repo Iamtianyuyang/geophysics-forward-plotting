@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sliceviewer Plotting"
+  short_description: "Help with Sliceviewer Plotting tasks"
+  default_prompt: "Use $sliceviewer-plotting to handle this geophysical plotting task according to its scientific conventions."

@@ -1,0 +1,10 @@
+---
+description: CIGVis-first scientific plotting and Agent Skills routing rules
+globs: "{src,tests,examples,skills}/**/*"
+alwaysApply: true
+---
+
+Follow `AGENTS.md`. Treat `skills/` as the canonical Agent Skills catalog. Before changing
+a geophysical plot, read `skills/geophysics-forward-plotting/SKILL.md`, the matching
+specialized skill, and `skills/figure-review/SKILL.md`.
+

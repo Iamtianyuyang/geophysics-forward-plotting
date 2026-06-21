@@ -1,0 +1,4 @@
+interface:
+  display_name: "Geophysics Forward Plotting"
+  short_description: "Help with Geophysics Forward Plotting tasks"
+  default_prompt: "Use $geophysics-forward-plotting to handle this geophysical plotting task according to its scientific conventions."

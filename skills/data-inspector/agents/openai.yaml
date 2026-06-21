@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Inspector"
+  short_description: "Help with Data Inspector tasks"
+  default_prompt: "Use $data-inspector to handle this geophysical plotting task according to its scientific conventions."

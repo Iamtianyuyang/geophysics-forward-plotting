@@ -1,0 +1,4 @@
+interface:
+  display_name: "Performance Plotting"
+  short_description: "Help with Performance Plotting tasks"
+  default_prompt: "Use $performance-plotting to handle this geophysical plotting task according to its scientific conventions."

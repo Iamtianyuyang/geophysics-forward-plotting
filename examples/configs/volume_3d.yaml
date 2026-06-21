@@ -1,0 +1,15 @@
+task_type: volume_3d
+title: "3D Seismic Volume"
+data_paths:
+  - examples/data/volume_3d.npy
+output_dir: examples/outputs
+symmetric_clim: true
+clip_percentile: 99.0
+export_formats:
+  - png
+parameters:
+  cmap: gray
+  slices:
+    - 15
+    - 15
+    - 30

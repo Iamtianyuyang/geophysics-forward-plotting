@@ -1,0 +1,29 @@
+task_type: multi_method_comparison
+title: "Four-Method Wavefield Comparison"
+data_paths:
+  - examples/data/method_a.npy
+  - examples/data/method_b.npy
+  - examples/data/method_c.npy
+  - examples/data/method_d.npy
+method_names:
+  - FD
+  - RTM
+  - LSRTM
+  - FWI
+output_dir: examples/outputs
+dx: 0.025
+dz: 0.025
+x0: 0.0
+z0: 0.0
+x_label: "Distance (km)"
+y_label: "Depth (km)"
+colorbar_label: "Amplitude"
+symmetric_clim: true
+clip_percentile: 99.0
+figure_size: [6.0, 4.0]
+dpi: 600
+export_formats:
+  - png
+  - pdf
+parameters:
+  cmap: seismic
