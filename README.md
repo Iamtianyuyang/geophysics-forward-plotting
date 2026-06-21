@@ -13,10 +13,14 @@ color normalization.
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![CIGVis](https://img.shields.io/badge/rendering-CIGVis--first-orange)
-![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-59%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 ![Wiggle display](examples/outputs/wiggle.png)
+
+| Velocity Model | Shot Record | 3D Volume |
+|:-:|:-:|:-:|
+| ![Velocity Model](examples/outputs/velocity_model.png) | ![Shot Record](examples/outputs/shot_record.png) | ![3D Volume](examples/outputs/volume_3d.png) |
 
 This project is built on [CIGVis](https://github.com/JintaoLee-Roger/cigvis).
 CIGVis supplies the geophysical 1D, 2D, 3D, and interactive visualization
@@ -28,7 +32,7 @@ for the underlying visualization capabilities.
 ```text
   LOAD          INSPECT         ROUTE          PLOT          REVIEW         EXPORT
  +------+      +--------+      +------+      +-------+      +------+      +--------+
- | .npy | ---> | shape  | ---> | task | ---> | skill | ---> | axes | ---> | PNG    |
+ | data | ---> | shape  | ---> | task | ---> | skill | ---> | axes | ---> | PNG    |
  | YAML |      | units  |      | type |      | run   |      | clim |      | PDF/SVG|
  +------+      +--------+      +------+      +-------+      +------+      +--------+
 ```
@@ -64,10 +68,12 @@ gfp agent-skills validate
 gfp render examples/configs/shot_record.yaml
 ```
 
-Install the optional CIGVis runtime for 3D volume rendering and SliceViewer:
+The Conda environment installs base CIGVis. Add the relevant CIGVis extra for
+interactive 3D or SliceViewer dependencies:
 
 ```bash
-python -m pip install -e ".[cigvis]"
+python -m pip install -e ".[cigvis-3d]"
+python -m pip install -e ".[sliceviewer]"
 ```
 
 </details>
@@ -96,6 +102,44 @@ python -m pip install -e ".[plot,dev]" \
 ```
 
 </details>
+
+---
+
+## Data Formats
+
+The Agent and CLI accept NumPy, raw binary, SEG-Y, and Seismic Unix data through
+the same `data_paths` interface.
+
+| Format | Extensions | Behavior |
+|---|---|---|
+| NumPy | `.npy` | Loaded with pickle disabled |
+| Raw binary | `.bin` | Requires explicit shape; supports dtype, endian, order, and byte offset |
+| SEG-Y | `.sgy`, `.segy` | Uses `segyio`; defaults from trace-major storage to `(samples, traces)` |
+| Seismic Unix | `.su` | Uses `segyio.su`; same normalized layout and header metadata |
+
+```yaml
+# Raw float32 shot record: no shape guessing
+data_paths: [data/shot_record.bin]
+data_options:
+  shape: [2000, 240]
+  dtype: float32
+  endianness: little
+  order: C
+  data_layout: nt_nx
+```
+
+```yaml
+# SEG-Y/SU dt is read from the header and converted from microseconds to seconds
+data_paths: [data/field_shot.segy]
+data_options:
+  output_layout: samples_traces
+  ignore_geometry: true
+  strict: false
+```
+
+For multiple inputs, `data_options` may be a list with one mapping per path. A
+single mapping is shared by every path. For a 3D SEG-Y volume, provide a verified
+`shape: [nz, ny, nx]`; the loader does not guess inline/crossline geometry.
 
 ---
 
@@ -129,10 +173,11 @@ full target matrix.
 
 ---
 
-## All 13 Agent Skills
+## All 14 Agent Skills
 
 The catalog contains a root router, a method-evaluation orchestrator, data
-inspection, nine plotting workflows, and a final figure-review gate. Agents
+inspection, a CIGVis API router, nine plotting workflows, and a final
+figure-review gate. Agents
 load the smallest relevant skill set for each request.
 
 ### Orchestrate - Route and evaluate
@@ -147,6 +192,12 @@ load the smallest relevant skill set for each request.
 | Skill | What it does | Use when |
 |---|---|---|
 | [data-inspector](skills/data-inspector/SKILL.md) | Loads NumPy arrays and infers common `nt x nx`, `nz x nx`, and `nz x ny x nx` layouts | Shape, layout, physical axes, or value range is uncertain |
+
+### Render - Select the CIGVis API
+
+| Skill | What it does | Use when |
+|---|---|---|
+| [cigvis-api-plotting](skills/cigvis-api-plotting/SKILL.md) | Routes 1D/2D/VisPy/Viser/Plotly/SliceViewer APIs and enforces axis-order conversion | Any geophysical plot should use CIGVis or has direction/overlay concerns |
 
 ### Plot - Create the figure
 
@@ -247,7 +298,7 @@ foundation; `CIGVisBackend` is a light interface adapter, not a reimplementation
 For advanced 3D overlays, arbitrary lines, well logs, bodies, point clouds, and
 browser rendering, use the patterns documented in the
 [CIGVis Gallery](https://cigvis.readthedocs.io/en/latest/gallery/index.html).
-The wrapper accepts arrays, `.npy` paths, and YAML task configuration; it never
+The wrapper accepts arrays, NPY/BIN/SEG-Y/SU paths, and YAML task configuration; it never
 depends on hard-coded CIGVis example paths.
 
 ---
@@ -331,7 +382,7 @@ contract.
 
 ```text
 geophysics-forward-plotting/
-|-- skills/                              # 13 canonical Agent Skills
+|-- skills/                              # 14 canonical Agent Skills
 |   |-- geophysics-forward-plotting/     # root router
 |   |-- method-evaluation/               # evaluation orchestrator
 |   |-- data-inspector/                  # data-layout inference
@@ -348,7 +399,7 @@ geophysics-forward-plotting/
 |   |-- scripts/                         # one demo per figure type
 |   `-- outputs/                         # generated figure previews
 |-- docs/                                # architecture and conventions
-|-- tests/                               # 40 automated tests
+|-- tests/                               # 59 automated tests
 |-- AGENTS.md / CLAUDE.md / GEMINI.md    # AI tool entry points
 |-- environment.yml                      # Conda environment
 `-- pyproject.toml                       # package and optional dependencies
@@ -372,7 +423,7 @@ figure publication-ready.
 
 ## Roadmap
 
-- Richer CIGVis fault, horizon, well-log, and point-cloud adapters.
+- More CIGVis multi-canvas and linked Viser comparison recipes.
 - Comparison-aware SliceViewer layouts for real and synthetic data.
 - Figure provenance manifests with input hashes and rendering parameters.
 - Journal-specific style profiles and automated panel lettering.
