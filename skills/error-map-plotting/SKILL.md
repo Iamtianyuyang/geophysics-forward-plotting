@@ -46,12 +46,16 @@ Optional via `parameters`:
 
 | Property          | Rule                                                         |
 |-------------------|--------------------------------------------------------------|
-| X axis label      | `Distance (km)`                                              |
-| Y axis label      | `Depth (km)`                                                 |
+| X axis label      | `Offset (km)` or `Distance (km)`                             |
+| Y axis label      | `Time (s)` or `Depth (km)`                                   |
 | Y direction       | **Downward**                                                 |
-| Colorbar label    | `Signed Error`, `Absolute Error`, or `Relative Error`        |
+| Colorbar label    | `Signed Error`, `Absolute Error`, `Relative Error`, or `Residual (Pa)` |
 | Signed colormap   | `seismic`, `RdBu_r`, or `bwr` (NEVER sequential)            |
 | Absolute colormap | `viridis`, `hot`, or `afmhot` (NEVER diverging)             |
+| Figure size       | 1.5 column: 5.5 × 4.0 in                                    |
+| Font              | Times New Roman (serif), tick=10pt, label=11pt               |
+| DPI               | 600                                                          |
+| Export            | PDF (vector) + PNG (preview)                                 |
 
 ## Critical Rules
 

@@ -80,8 +80,52 @@ These conventions apply to ALL sub-skills unless explicitly overridden:
 3. **Physical coordinates**, not array indices, must be used for axis labels.
 4. **Units must be shown** in axis labels: `Distance (km)`, `Time (s)`, `Depth (km)`.
 5. **Multi-panel figures use unified clim** — never independent per-panel normalization.
-6. **DPI ≥ 300** for publication; default is 600.
+6. **DPI = 600** for publication (≥ 300 minimum).
 7. **Colorbar labels are mandatory** on all figures with color encoding.
+8. **Export both PDF (vector) and PNG (preview)** for static figures.
+
+## Typography and Figure Sizing (Paper Standards)
+
+All figures must use a consistent, publication-ready visual style.
+
+### Font
+
+- **Family:** serif (Times New Roman primary; STIXGeneral fallback).
+- **Math:** STIX mathtext (`mathtext.fontset = stix`).
+- Use LaTeX-style labels when possible: `Velocity (m s$^{-1}$)` instead of `Velocity (m/s)`.
+
+### Font Sizes
+
+| Element              | Size (pt) |
+|----------------------|-----------|
+| Suptitle (fig title) | 14        |
+| Subplot title        | 13        |
+| Axis label           | 11        |
+| Colorbar label       | 11        |
+| Tick labels          | 10        |
+| Annotations          | 10        |
+
+### Figure Sizes (Journal Column Widths)
+
+| Layout         | Width (in) | Use when               |
+|----------------|------------|------------------------|
+| Single column  | 3.5        | Velocity, wavefield, performance |
+| 1.5 column     | 5.5        | Shot record, wiggle, error map   |
+| Double column  | 7.0        | Multi-method comparison (2×2)    |
+
+Height should preserve a reasonable aspect ratio (typically width × 0.7–0.9).
+
+### Axis Labels
+
+- Shot records and gathers: x = `Offset (km)`, y = `Time (s)`.
+- Spatial sections: x = `Distance (km)`, y = `Depth (km)`.
+- Colorbar: use physical units with LaTeX: `Velocity (m s$^{-1}$)`, `Pressure (Pa)`.
+
+### Tick and Spine Style
+
+- Tick width: 0.6–0.8 pt, inward direction, labelsize = 10.
+- Top and right spines hidden for bar/line charts.
+- Grid lines: `alpha=0.25`, dashed, behind data (`zorder=0`).
 
 ## Common Mistakes to Avoid
 

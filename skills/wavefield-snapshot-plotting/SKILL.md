@@ -45,9 +45,13 @@ Optional via `parameters`:
 | X axis label      | `Distance (km)`                                       |
 | Y axis label      | `Depth (km)`                                          |
 | Y direction       | **Downward** (depth increases downward)               |
-| Colorbar label    | `Amplitude`                                           |
+| Colorbar label    | `Pressure (Pa)`                                       |
 | Colormap          | Diverging: `seismic` or `RdBu_r`                      |
 | Clim              | **Symmetric** `[-v, +v]`                              |
+| Figure size       | Single column: 3.5 × 2.8 in                          |
+| Font              | Times New Roman (serif), tick=10pt, label=11pt        |
+| DPI               | 600                                                   |
+| Export            | PDF (vector) + PNG (preview)                          |
 
 ## Critical Rules
 

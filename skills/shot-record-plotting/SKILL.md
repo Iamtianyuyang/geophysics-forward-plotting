@@ -43,13 +43,17 @@ Optional via `parameters`:
 
 | Property          | Value / Rule                                          |
 |-------------------|-------------------------------------------------------|
-| X axis label      | `Receiver position (km)` or `Distance (km)`           |
+| X axis label      | `Offset (km)`                                         |
 | Y axis label      | `Time (s)`                                            |
 | Y direction       | **Downward** (time increases downward)                |
 | Colorbar label    | `Amplitude`                                           |
 | Colormap          | Diverging: `seismic` or `gray`                        |
 | Clim              | **Symmetric** `[-v, +v]` based on percentile         |
 | Multi-panel clim  | **Unified across all panels** — NEVER independent     |
+| Figure size       | 1.5 column: 5.5 × 4.0 in                             |
+| Font              | Times New Roman (serif), tick=10pt, label=11pt        |
+| DPI               | 600                                                   |
+| Export            | PDF (vector) + PNG (preview)                          |
 
 ## Critical Rules (enforce strictly)
 

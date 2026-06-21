@@ -42,10 +42,14 @@ Optional via `parameters`:
 
 | Property       | Rule                                       |
 |----------------|--------------------------------------------|
-| X axis label   | `Distance (km)` or `Receiver position (km)`|
+| X axis label   | `Offset (km)`                              |
 | Y axis label   | `Time (s)`                                 |
 | Y direction    | **Downward** (time=0 at top)               |
 | Fill mode      | Positive-fill (wigb style) by default      |
+| Figure size    | 1.5 column: 5.5 × 4.0 in                  |
+| Font           | Times New Roman (serif), tick=10pt, label=11pt |
+| DPI            | 600                                        |
+| Export         | PDF (vector) + PNG (preview)               |
 
 ## Critical Rules
 

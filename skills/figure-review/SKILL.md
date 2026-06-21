@@ -29,6 +29,27 @@ Returns a list of warnings and suggestions — does not modify the figure.
 | shot_record with symmetric=False  | WARNING  | Amplitude data must use symmetric clim                |
 | wavefield with symmetric=False    | WARNING  | Wavefield amplitude must be symmetric                 |
 | Axes missing xlabel/ylabel        | WARNING  | Each matplotlib Axes must have labeled axes           |
+| Export format missing PDF         | INFO     | Vector PDF preferred for journal submission           |
+
+### Typography and Sizing Checks (Paper Standards)
+
+| Property       | Expected value                                    |
+|----------------|---------------------------------------------------|
+| Font family    | serif (Times New Roman)                           |
+| Tick labelsize | 10 pt                                             |
+| Axis label     | 11 pt                                             |
+| Subplot title  | 13 pt                                             |
+| Suptitle       | 14 pt                                             |
+| DPI            | 600 (publication default)                         |
+| Export         | PDF + PNG                                         |
+
+### Figure Size Guidelines
+
+| Layout         | Width (in) | Use when                              |
+|----------------|------------|---------------------------------------|
+| Single column  | 3.5        | Velocity, wavefield, performance      |
+| 1.5 column     | 5.5        | Shot record, wiggle, error map        |
+| Double column  | 7.0        | Multi-method comparison (2×2)         |
 
 ## Inputs
 

@@ -46,6 +46,12 @@ Optional via `parameters`:
 | Coordinate axes       | Identical extent across all panels                              |
 | Colormap              | Same colormap for all panels                                    |
 | Layout                | 1×N for ≤2 methods; 2×2 for 3–4 methods                        |
+| Figure size           | Double column: 7.0 × 5.5 in (2×2); 1.5 col: 5.5 × 4.0 in (1×N) |
+| Font                  | Times New Roman (serif), tick=10pt, label=11pt, title=13pt      |
+| DPI                   | 600                                                             |
+| Export                | PDF (vector) + PNG (preview)                                    |
+| Panel labels          | `(a)`, `(b)`, `(c)`, `(d)` prefix in method names              |
+| LaTeX in labels       | Use `$t$ = 500 ms`, `$\Delta x$ = 20 m` etc.                   |
 
 ## Critical Rules — Read Carefully
 

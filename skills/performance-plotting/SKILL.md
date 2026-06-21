@@ -53,6 +53,17 @@ Optional:
 | Memory         | `Memory (GB)`           | Peak memory usage              |
 | Speedup        | `Speedup (×)`           | Relative to named baseline     |
 
+### Figure Sizing and Typography
+
+| Property       | Value                                    |
+|----------------|------------------------------------------|
+| Figure size    | Single column: 3.5 × 2.6 in             |
+| Font           | Times New Roman (serif), tick=10pt, label=11pt, title=13pt |
+| DPI            | 600                                      |
+| Export         | PDF (vector) + PNG (preview)             |
+| Bar style      | Gradient blue, value annotations, clean grid |
+| Spines         | Top and right hidden                     |
+
 ## Critical Rules
 
 1. **Always specify the metric unit** in the y-axis label.

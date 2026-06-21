@@ -47,16 +47,20 @@ Optional parameters via `parameters` dict:
 | X axis label      | `Distance (km)`                               |
 | Y axis label      | `Depth (km)`                                  |
 | Y direction       | **Downward** (depth increases downward)       |
-| Colorbar label    | `Velocity (m/s)`                              |
-| Colormap          | Non-symmetric; `jet` or `turbo` recommended   |
+| Colorbar label    | `Velocity (m s$^{-1}$)`                       |
+| Colormap          | Non-symmetric; `jet` or `turbo`               |
 | Clim              | Asymmetric; based on actual velocity range    |
+| Figure size       | Single column: 3.5 × 2.8 in                  |
+| Font              | Times New Roman (serif), tick=10pt, label=11pt |
+| DPI               | 600                                           |
+| Export            | PDF (vector) + PNG (preview)                  |
 
 ## Common Mistakes to Avoid
 
 - **Do NOT** invert the y-axis to point upward — depth must go down.
 - **Do NOT** use a diverging colormap (e.g., seismic/RdBu) for velocity models.
 - **Do NOT** use array row indices as axis labels — use `km` coordinates.
-- **Do NOT** omit the colorbar label (`Velocity (m/s)` is mandatory).
+- **Do NOT** omit the colorbar label (`Velocity (m s$^{-1}$)` is mandatory).
 - **Do NOT** assume the array is `(nx, nz)` — standard is `(nz, nx)`.
 
 ## Default Behavior
@@ -65,7 +69,7 @@ Optional parameters via `parameters` dict:
 - clim: asymmetric, 1st–99th percentile
 - depth axis: downward
 - DPI: 600
-- Output formats: PNG
+- Output formats: PDF + PNG
 
 ## Example Prompt
 
