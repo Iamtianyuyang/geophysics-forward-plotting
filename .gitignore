@@ -23,4 +23,7 @@ dist/
 build/
 examples/outputs/*
 !examples/outputs/.gitkeep
-!examples/outputs/multi_method_compare.png
+!examples/outputs/*.png
+!examples/outputs/*.pdf
+!examples/outputs/forward/
+!examples/outputs/evaluation/
