@@ -1,19 +1,19 @@
 task_type: shot_record
-title: "Synthetic Shot Record"
+title: "Shot Record (deepwave acoustic)"
 data_paths:
   - examples/data/shot_record.npy
 output_dir: examples/outputs
-dt: 0.002        # s
-dx: 0.025        # km
+dt: 0.001
+dx: 0.01
 x0: 0.0
 t0: 0.0
-x_label: "Receiver position (km)"
+x_label: "Distance (km)"
 y_label: "Time (s)"
 colorbar_label: "Amplitude"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [7.0, 5.0]
-dpi: 600
+figure_size: [8.0, 6.0]
+dpi: 300
 export_formats:
   - png
 parameters:

@@ -1,18 +1,17 @@
 task_type: velocity_model
-title: "Marmousi-like Velocity Model"
+title: "Synthetic Velocity Model"
 data_paths:
   - examples/data/velocity_model.npy
 output_dir: examples/outputs
-dx: 0.025        # km
-dz: 0.025        # km
+dx: 0.01
+dz: 0.01
 x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
 y_label: "Depth (km)"
 colorbar_label: "Velocity (m/s)"
-clip_percentile: 99.0
-figure_size: [8.0, 4.0]
-dpi: 600
+figure_size: [8.0, 5.0]
+dpi: 300
 export_formats:
   - png
   - pdf

@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""演示 MethodEvaluationAgent：自动评估"新方法"相对基线方法的优势与缺点。
+"""演示 MethodEvaluationAgent：评估不同方法相对于参考解的表现。
 
 场景
-  把 FDTD 炮记录当作参考解（ground truth），构造三个"方法"：
-    - New Hybrid : 高精度（小噪声），但运行较慢
-    - RTM        : 平滑炮记录（低频代理），精度中等
-    - FD-coarse  : 大噪声、粗网格代理，精度最差但最快
+  使用 deepwave + FDTD 生成的正演数据作为参考解（ground truth），构造三个方法：
+    - FD-fine    : 精细网格 FDTD（参考解本身）
+    - FD-coarse  : 粗网格 FDTD（分辨率降低，精度中等）
+    - Smoothed   : 高斯低通滤波（模拟低频方法，精度最差）
   Agent 自动产出对比图 / 误差图 / 残差图 / 性能图，并给出优势-缺点结论。
 
 前置
-  python examples/scripts/forward_modeling.py   # 生成 examples/data/forward/
+  python examples/scripts/generate_data.py
 
 运行
   python examples/scripts/demo_method_evaluation.py
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -28,40 +29,44 @@ import numpy as np
 
 from geophysics_forward_plotting import MethodEvaluationAgent, MethodResult
 
-DATA_DIR = _repo / "examples" / "data" / "forward"
+DATA_DIR = _repo / "examples" / "data"
 OUT_DIR = _repo / "examples" / "outputs" / "evaluation"
 
-DT = 0.001  # 炮记录时间步长 (s)
-DX = 0.01   # 道间距 (km)
+DT = 0.001
+DX = 0.01
 
 
 def main() -> None:
-    shot = DATA_DIR / "shot_record.npy"
-    smooth = DATA_DIR / "shot_smooth.npy"
-    if not shot.exists() or not smooth.exists():
-        print("[ERROR] 缺少正演数据，请先运行 forward_modeling.py")
+    required = ["method_fd_fine.npy", "method_fd_coarse.npy",
+                "method_smooth.npy", "perf.json"]
+    missing = [f for f in required if not (DATA_DIR / f).exists()]
+    if missing:
+        print(f"[ERROR] Missing data: {missing}")
+        print("Run: python examples/scripts/generate_data.py")
         sys.exit(1)
 
-    reference = np.load(shot).astype(np.float32)          # 当作 ground truth
-    rng = np.random.default_rng(0)
-    scale = float(np.abs(reference).max())
+    reference = np.load(DATA_DIR / "method_fd_fine.npy").astype(np.float32)
+    fd_coarse = np.load(DATA_DIR / "method_fd_coarse.npy").astype(np.float32)
+    smoothed  = np.load(DATA_DIR / "method_smooth.npy").astype(np.float32)
 
-    new_method = reference + rng.normal(0, 0.01 * scale, reference.shape).astype(np.float32)
-    rtm = np.load(smooth).astype(np.float32)              # 平滑 → 精度中等
-    fd_coarse = reference + rng.normal(0, 0.05 * scale, reference.shape).astype(np.float32)
+    with open(DATA_DIR / "perf.json", encoding="utf-8") as f:
+        perf = json.load(f)
+    # perf["values"]: [0.025, 0.082, 0.187] for [100x200, 200x400, 300x600]
+    runtime_ref = perf["values"][1]    # 200x400 ~ FD-fine
+    runtime_coarse = perf["values"][0]  # 100x200 ~ FD-coarse
 
     agent = MethodEvaluationAgent()
     report = agent.evaluate(
-        new_method=MethodResult("New Hybrid", new_method, runtime=14.2),
+        new_method=MethodResult("FD-fine", reference, runtime=runtime_ref),
         baselines=[
-            MethodResult("RTM", rtm, runtime=8.1),
-            MethodResult("FD-coarse", fd_coarse, runtime=3.4),
+            MethodResult("FD-coarse", fd_coarse, runtime=runtime_coarse),
+            MethodResult("Smoothed", smoothed, runtime=runtime_ref * 0.5),
         ],
         reference=reference,
-        figure_kind="shot_record",
+        figure_kind="wavefield_snapshot",
         output_dir=OUT_DIR,
         colorbar_label="Amplitude",
-        dx=DX, dt=DT,
+        dx=DX, dz=DX,
         dpi=300,
     )
 

@@ -1,10 +1,10 @@
 task_type: wavefield_snapshot
-title: "Wavefield Snapshot"
+title: "Acoustic Wavefield Snapshot"
 data_paths:
-  - examples/data/wavefield_snapshot.npy
+  - examples/data/snap_500ms.npy
 output_dir: examples/outputs
-dx: 0.025
-dz: 0.025
+dx: 0.01
+dz: 0.01
 x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
@@ -12,10 +12,10 @@ y_label: "Depth (km)"
 colorbar_label: "Amplitude"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [7.0, 4.0]
-dpi: 600
+figure_size: [8.0, 5.0]
+dpi: 300
 export_formats:
   - png
 parameters:
   cmap: seismic
-  snapshot_time: 0.3
+  snapshot_time: 0.5

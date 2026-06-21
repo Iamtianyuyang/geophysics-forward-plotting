@@ -1,18 +1,18 @@
 task_type: multi_method_comparison
-title: "Four-Method Wavefield Comparison"
+title: "Wavefield Comparison at t = 500 ms"
 data_paths:
-  - examples/data/method_a.npy
-  - examples/data/method_b.npy
-  - examples/data/method_c.npy
-  - examples/data/method_d.npy
+  - examples/data/method_fd_fine.npy
+  - examples/data/method_fd_coarse.npy
+  - examples/data/method_smooth.npy
+  - examples/data/method_perturbed.npy
 method_names:
-  - FD
-  - RTM
-  - LSRTM
-  - FWI
+  - FD-fine
+  - FD-coarse
+  - Smoothed
+  - Perturbed
 output_dir: examples/outputs
-dx: 0.025
-dz: 0.025
+dx: 0.01
+dz: 0.01
 x0: 0.0
 z0: 0.0
 x_label: "Distance (km)"
@@ -20,8 +20,8 @@ y_label: "Depth (km)"
 colorbar_label: "Amplitude"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [6.0, 4.0]
-dpi: 600
+figure_size: [8.0, 6.0]
+dpi: 300
 export_formats:
   - png
   - pdf

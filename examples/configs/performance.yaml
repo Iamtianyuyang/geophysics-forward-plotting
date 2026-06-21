@@ -1,20 +1,18 @@
 task_type: performance
-title: "Computational Time Comparison"
+title: "FDTD Forward Modeling — Runtime vs Grid Size"
 output_dir: examples/outputs
 figure_size: [6.0, 4.0]
-dpi: 600
+dpi: 300
 export_formats:
   - png
 parameters:
   categories:
-    - FD
-    - RTM
-    - LSRTM
-    - FWI
+    - "100x200"
+    - "200x400"
+    - "300x600"
   values:
-    - 1.2
-    - 4.5
-    - 9.8
-    - 38.6
-  metric_label: "Time (s)"
+    - 0.027
+    - 0.082
+    - 0.187
+  metric_label: "Runtime (s)"
   chart_type: bar

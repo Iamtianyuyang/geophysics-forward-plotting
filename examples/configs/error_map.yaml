@@ -1,20 +1,20 @@
 task_type: error_map
-title: "Signed Error Map: FD vs RTM"
+title: "Signed Residual: FD-fine vs Smoothed"
 data_paths:
-  - examples/data/method_a.npy   # predicted
-  - examples/data/method_b.npy   # reference
+  - examples/data/shot_record.npy
+  - examples/data/shot_smooth.npy
 output_dir: examples/outputs
-dx: 0.025
-dz: 0.025
+dx: 0.01
+dz: 0.001
 x0: 0.0
-z0: 0.0
+t0: 0.0
 x_label: "Distance (km)"
-y_label: "Depth (km)"
-colorbar_label: "Signed Error"
+y_label: "Time (s)"
+colorbar_label: "Signed Residual"
 symmetric_clim: true
 clip_percentile: 99.0
-figure_size: [7.0, 4.0]
-dpi: 600
+figure_size: [8.0, 6.0]
+dpi: 300
 export_formats:
   - png
 parameters:
