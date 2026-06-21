@@ -91,5 +91,13 @@ Colormap: gray. Amplitude symmetric clim.
 
 ## CIGVis Gallery Reference
 
+CIGVis 3D API:
+```python
+import cigvis
+nodes = cigvis.create_slices(volume, pos=[[x], [y], [z]], cmap='Petrel')
+nodes += cigvis.create_colorbar_from_nodes(nodes, 'Amplitude', select='slices')
+cigvis.plot3D(nodes, view=cigvis.Plot3DView(size=(800, 600)),
+              save=cigvis.Plot3DSave(path='output.png'))
+```
 Refer to the CIGVis Gallery for all 3D features (fault/horizon/well overlays):
-https://cigvis.readthedocs.io/en/latest/gallery/index.html#d-seismic-volume
+https://cigvis.readthedocs.io/en/latest/gallery/index.html#3dvispy

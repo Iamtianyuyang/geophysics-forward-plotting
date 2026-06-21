@@ -25,8 +25,10 @@ def build_imshow_kwargs(
     生成 imshow 风格绘图所需的关键词参数字典。
 
     返回字段包括：extent, cmap, clim, x_label, y_label, title,
-    colorbar_label, figsize, dpi。
+    colorbar_label, figsize, dpi, xsample, ysample。
     """
+    import numpy as np
+
     data = context.primary()
     nt_or_nz, nx = data.shape
 
@@ -40,6 +42,12 @@ def build_imshow_kwargs(
 
     cmap = override_cmap or style.cmap or (style.diverging_cmap if sym else style.sequential_cmap)
 
+    # 物理坐标数组（供 cigvis.plot2d 的 xsample/ysample 使用）
+    x0 = task.x0 or 0.0
+    y0 = task.z0 or task.t0 or 0.0
+    xsample = np.arange(nx) * dx + x0
+    ysample = np.arange(nt_or_nz) * dy + y0
+
     return {
         "extent": ext,
         "cmap": cmap,
@@ -50,6 +58,8 @@ def build_imshow_kwargs(
         "colorbar_label": task.colorbar_label or "",
         "figsize": task.figure_size,
         "dpi": task.dpi,
+        "xsample": xsample,
+        "ysample": ysample,
     }
 
 

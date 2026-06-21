@@ -83,5 +83,10 @@ Export as PNG (600 dpi) and PDF.
 
 ## CIGVis Reference
 
-CIGVis provides 2D image plotting capabilities used by this skill.
-See: https://cigvis.readthedocs.io/en/latest/gallery/index.html#d-image
+CIGVis provides 2D image plotting used by this skill.
+```python
+import cigvis
+cigvis.plot2d(vel, cmap='jet', clim=[vmin, vmax], cbar='Velocity (m s$^{-1}$)',
+              xlabel='Distance (km)', ylabel='Depth (km)', ax=ax)
+```
+See: https://cigvis.readthedocs.io/en/latest/gallery/index.html#2d

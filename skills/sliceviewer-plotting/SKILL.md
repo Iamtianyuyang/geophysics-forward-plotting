@@ -48,8 +48,13 @@ Use `volume_3d` or 2D slice extraction as alternatives.
 
 ## CIGVis Gallery Reference
 
-CIGVis SliceViewer and comparison grid:
-https://cigvis.readthedocs.io/en/latest/gallery/index.html#sliceviewer
+CIGVis SliceViewer:
+```python
+from cigvis import sliceviewer
+viewer = sliceviewer.SliceViewer(volume, cmap='gray', clim=[vmin, vmax])
+viewer.show()
+```
+Requires: `pip install "cigvis[sliceviewer]"`
 
 Features available in CIGVis SliceViewer (refer to Gallery for details):
 - Real seismic data slice viewer

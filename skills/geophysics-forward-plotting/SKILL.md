@@ -48,9 +48,10 @@ User request
 ```
 
 CIGVis handles:
-- All 2D geophysical image-like plots (via cigvis.mpl)
-- 3D volume rendering (via cigvis vispy)
-- Interactive SliceViewer
+- All 2D geophysical image-like plots (via `cigvis.plot2d`)
+- 1D trace / wiggle plots (via `cigvis.plot1d` / `cigvis.plot_multi_traces`)
+- 3D volume rendering (via `cigvis.create_slices` + `cigvis.plot3D`)
+- Interactive SliceViewer (via `cigvis.sliceviewer`)
 
 Matplotlib handles:
 - Performance bar/line charts

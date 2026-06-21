@@ -88,4 +88,9 @@ Export as PNG (600 dpi).
 ## CIGVis Reference
 
 CIGVis 2D image plotting supports this kind of spatial field visualization.
-See: https://cigvis.readthedocs.io/en/latest/gallery/index.html#d-image
+```python
+import cigvis
+cigvis.plot2d(snap, cmap='seismic', clim=[-v, v], cbar='Pressure (Pa)',
+              xlabel='Distance (km)', ylabel='Depth (km)', ax=ax)
+```
+See: https://cigvis.readthedocs.io/en/latest/gallery/index.html#2d

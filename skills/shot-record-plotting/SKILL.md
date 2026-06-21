@@ -92,5 +92,10 @@ Export as PNG (600 dpi).
 
 ## CIGVis Reference
 
-CIGVis provides 2D image and 1D seismogram plotting used by this skill.
-See: https://cigvis.readthedocs.io/en/latest/gallery/index.html
+CIGVis provides 2D image plotting used by this skill.
+```python
+import cigvis
+cigvis.plot2d(shot, cmap='seismic', clim=[-v, v], cbar='Amplitude',
+              xlabel='Offset (km)', ylabel='Time (s)', aspect='auto', ax=ax)
+```
+See: https://cigvis.readthedocs.io/en/latest/gallery/index.html#2d
