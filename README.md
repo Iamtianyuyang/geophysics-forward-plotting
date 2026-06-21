@@ -14,7 +14,7 @@ color normalization.
 ![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-![Four-method seismic comparison](examples/outputs/multi_method_compare.png)
+![Wiggle display](examples/outputs/wiggle.png)
 
 This project is built on [CIGVis](https://github.com/JintaoLee-Roger/cigvis).
 CIGVis supplies the geophysical 1D, 2D, 3D, and interactive visualization
