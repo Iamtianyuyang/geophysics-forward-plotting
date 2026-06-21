@@ -3,24 +3,32 @@
 本模块不复制 CIGVis 内部实现，只做接口适配，将本框架的
 FigureTask / DataContext 转换为 cigvis 所需的参数格式。
 
-优先参考：
-  - CIGVis 仓库：https://github.com/JintaoLee-Roger/cigvis
-  - CIGVis Gallery：https://cigvis.readthedocs.io/en/latest/gallery/index.html
+CIGVis API（参考 examples/ 目录）：
 
-分工策略
---------
-- 2D 图像切片（速度模型、炮记录、波场快照）：
-  cigvis.plot2d 或 cigvis.mpl 接口（当 cigvis 可用时优先使用）。
-- 1D 地震道（wiggle / seismogram）：
-  cigvis 的 1D trace 接口。
-- 3D 体数据渲染（多切片、fault/horizon 叠加）：
-  cigvis.plot3d 接口（需要 vispy 环境）。
-- SliceViewer（交互式浏览）：
-  cigvis.SliceViewer 接口。
-- 静态导出：所有 cigvis figure 统一使用 save_figure 工具。
+  2D:
+    cigvis.plot2d(img, cmap, clim, figsize, title, xlabel, ylabel,
+                  cbar, aspect, xsample, ysample, xlabel_size, ylabel_size,
+                  title_size, ticklabels_size, cbar_label_size, cbar_ticklabels_size,
+                  save, dpi, show, ax)
 
-如果 cigvis 不可用，2D/1D 任务会 fallback 到 MatplotlibBackend；
-3D / SliceViewer 任务则抛出 BackendUnavailableError，给用户清晰提示。
+  1D:
+    cigvis.plot1d(data, dt, beg, orient, figsize, title, axis_label,
+                  value_label, fill_up, fill_down, fill_color, c,
+                  save, show, dpi, ax)
+    cigvis.plot_multi_traces(data, dt, beg, inter, c, fill_up, fill_down,
+                             fill_color, figsize, xlabel, ylabel, save,
+                             show, dpi, lw, ax)
+
+  3D:
+    nodes = cigvis.create_slices(volume, pos, clim, cmap)
+    nodes += cigvis.create_colorbar_from_nodes(nodes, label, select='slices')
+    cigvis.plot3D(nodes, view=cigvis.Plot3DView(...), save=cigvis.Plot3DSave(...))
+
+  SliceViewer:
+    pip install "cigvis[sliceviewer]"
+
+Gallery: https://cigvis.readthedocs.io/en/latest/gallery/index.html
+Source:  https://github.com/JintaoLee-Roger/cigvis
 """
 
 from __future__ import annotations
@@ -32,7 +40,6 @@ from geophysics_forward_plotting.core.exceptions import BackendUnavailableError
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-# 延迟导入 cigvis，避免在无 vispy 环境中启动时崩溃
 try:
     import cigvis  # type: ignore[import-untyped]
 
@@ -42,7 +49,6 @@ except ImportError:
 
 
 def is_available() -> bool:
-    """返回 cigvis 是否可用。"""
     return _CIGVIS_AVAILABLE
 
 
@@ -55,7 +61,7 @@ def _require_cigvis() -> None:
 
 
 # ---------------------------------------------------------------------------
-# 2D 接口适配
+# 2D 接口适配 — cigvis.plot2d()
 # ---------------------------------------------------------------------------
 
 
@@ -71,40 +77,25 @@ def plot2d_image(
     colorbar_label: str = "",
     figsize: tuple[float, float] = (7.0, 4.5),
     dpi: int = 600,
+    xsample: NDArray | None = None,
+    ysample: NDArray | None = None,
 ) -> Any:
     """
-    使用 cigvis 2D 接口显示图像切片，返回 matplotlib Figure。
+    使用 cigvis.plot2d() 显示 2D 图像切片。
 
-    cigvis 已提供丰富的 2D 图件能力，参考：
-      https://cigvis.readthedocs.io/en/latest/gallery/index.html#d-image
-
-    如果 cigvis 不可用，自动 fallback 到 matplotlib。
+    cigvis.plot2d 不返回 fig，需提前创建 axes 传入 ax 参数。
     """
     if _CIGVIS_AVAILABLE:
         return _cigvis_plot2d(
-            data,
-            extent=extent,
-            cmap=cmap,
-            clim=clim,
-            x_label=x_label,
-            y_label=y_label,
-            title=title,
-            colorbar_label=colorbar_label,
-            figsize=figsize,
-            dpi=dpi,
+            data, extent=extent, cmap=cmap, clim=clim,
+            x_label=x_label, y_label=y_label, title=title,
+            colorbar_label=colorbar_label, figsize=figsize, dpi=dpi,
+            xsample=xsample, ysample=ysample,
         )
-    # fallback
     return _mpl_plot2d(
-        data,
-        extent=extent,
-        cmap=cmap,
-        clim=clim,
-        x_label=x_label,
-        y_label=y_label,
-        title=title,
-        colorbar_label=colorbar_label,
-        figsize=figsize,
-        dpi=dpi,
+        data, extent=extent, cmap=cmap, clim=clim,
+        x_label=x_label, y_label=y_label, title=title,
+        colorbar_label=colorbar_label, figsize=figsize, dpi=dpi,
     )
 
 
@@ -120,48 +111,44 @@ def _cigvis_plot2d(
     colorbar_label: str,
     figsize: tuple[float, float],
     dpi: int,
+    xsample: NDArray | None,
+    ysample: NDArray | None,
 ) -> Any:
-    """
-    调用 cigvis 的 mpl 2D 绘图接口。
-
-    cigvis 在 mpl 后端提供 cigvis.mpl.plot2d(data, ...) 风格的 API。
-    如果具体接口名称随版本变化，在此处集中维护适配。
-    """
-
-    # 尝试使用 cigvis 的 mpl 接口；如果接口签名不兼容则回退到纯 matplotlib
+    """调用 cigvis.plot2d() — CIGVis 官方 2D 绘图 API。"""
     try:
-        # cigvis >= 0.2 提供 cigvis.mpl.plot2d
-        fig, ax = cigvis.mpl.plot2d(  # type: ignore[attr-defined]
-            data,
-            figsize=figsize,
-            cmap=cmap,
-            vmin=clim[0] if clim else None,
-            vmax=clim[1] if clim else None,
+        import matplotlib.pyplot as plt
+
+        from geophysics_forward_plotting.core.defaults import (
+            LABEL_FONT_SIZE,
+            TITLE_FONT_SIZE,
         )
-        if extent is not None:
-            im = ax.get_images()[0] if ax.get_images() else None
-            if im is not None:
-                im.set_extent(extent)
-        ax.set_xlabel(x_label)
-        ax.set_ylabel(y_label)
-        ax.set_title(title)
-        if colorbar_label:
-            cb = fig.colorbar(ax.get_images()[0], ax=ax)
-            cb.set_label(colorbar_label)
-        return fig
-    except AttributeError:
-        # cigvis 版本不含 mpl 子模块，回退到纯 matplotlib
-        return _mpl_plot2d(
+
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+        cigvis.plot2d(
             data,
-            extent=extent,
             cmap=cmap,
-            clim=clim,
-            x_label=x_label,
-            y_label=y_label,
-            title=title,
-            colorbar_label=colorbar_label,
-            figsize=figsize,
+            clim=list(clim) if clim else None,
+            title=title or None,
+            xlabel=x_label or None,
+            ylabel=y_label or None,
+            cbar=colorbar_label or None,       # cbar 是色条标签字符串
+            xlabel_size=LABEL_FONT_SIZE,
+            ylabel_size=LABEL_FONT_SIZE,
+            title_size=TITLE_FONT_SIZE,
+            cbar_label_size=LABEL_FONT_SIZE,
+            aspect="auto",
+            xsample=xsample.tolist() if xsample is not None else None,
+            ysample=ysample.tolist() if ysample is not None else None,
             dpi=dpi,
+            show=False,
+            ax=ax,
+        )
+        return fig
+    except Exception:
+        return _mpl_plot2d(
+            data, extent=extent, cmap=cmap, clim=clim,
+            x_label=x_label, y_label=y_label, title=title,
+            colorbar_label=colorbar_label, figsize=figsize, dpi=dpi,
         )
 
 
@@ -184,13 +171,8 @@ def _mpl_plot2d(
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     vmin, vmax = (clim[0], clim[1]) if clim else (None, None)
     im = ax.imshow(
-        data,
-        aspect="auto",
-        cmap=cmap,
-        vmin=vmin,
-        vmax=vmax,
-        extent=extent,
-        origin="upper",
+        data, aspect="auto", cmap=cmap, vmin=vmin, vmax=vmax,
+        extent=extent, origin="upper",
     )
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
@@ -202,7 +184,100 @@ def _mpl_plot2d(
 
 
 # ---------------------------------------------------------------------------
-# 3D 接口适配
+# 1D wiggle 接口适配 — cigvis.plot_multi_traces()
+# ---------------------------------------------------------------------------
+
+
+def plot1d_wiggle(
+    data: NDArray,
+    *,
+    dt: float = 0.002,
+    x0: float = 0.0,
+    skip: int = 1,
+    gain: float = 1.0,
+    fill_positive: bool = True,
+    x_label: str = "Distance (km)",
+    y_label: str = "Time (s)",
+    title: str = "",
+    figsize: tuple[float, float] = (7.0, 6.0),
+    dpi: int = 600,
+) -> Any:
+    """
+    使用 cigvis.plot_multi_traces() 绘制多道 wiggle 图。
+
+    CIGVis 示例（examples/1D/2-plot_multi_traces.py）:
+      cigvis.plot_multi_traces(traces, dt=0.02, c='black', fill_up=0.2, ax=ax)
+    """
+    if _CIGVIS_AVAILABLE:
+        return _cigvis_plot_multi_traces(
+            data, dt=dt, x0=x0, skip=skip, gain=gain,
+            fill_positive=fill_positive, x_label=x_label, y_label=y_label,
+            title=title, figsize=figsize, dpi=dpi,
+        )
+    from geophysics_forward_plotting.backend.matplotlib_backend import wiggle_plot
+    return wiggle_plot(
+        data, dt=dt, dx=1.0, x0=x0, skip=skip, gain=gain,
+        fill_positive=fill_positive, x_label=x_label, y_label=y_label,
+        title=title, figsize=figsize, dpi=dpi,
+    )
+
+
+def _cigvis_plot_multi_traces(
+    data: NDArray,
+    *,
+    dt: float,
+    x0: float,
+    skip: int,
+    gain: float,
+    fill_positive: bool,
+    x_label: str,
+    y_label: str,
+    title: str,
+    figsize: tuple[float, float],
+    dpi: int,
+) -> Any:
+    """
+    调用 cigvis.plot_multi_traces()。
+
+    CIGVis API:
+      plot_multi_traces(data, dt, beg, inter, c, fill_up, fill_down,
+                        fill_color, figsize, xlabel, ylabel, save,
+                        show, dpi, lw, ax)
+    fill_up 是 float 阈值（如 0.2），不是颜色。
+    """
+    try:
+        import matplotlib.pyplot as plt
+
+        sub = data[:, ::skip] if skip > 1 else data
+        scaled = sub * gain
+
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+        cigvis.plot_multi_traces(
+            scaled,
+            dt=dt,
+            beg=x0,
+            c="black",
+            fill_up=0.2 if fill_positive else None,
+            fill_color="black" if fill_positive else None,
+            xlabel=x_label,
+            ylabel=y_label,
+            show=False,
+            ax=ax,
+        )
+        if title:
+            ax.set_title(title)
+        return fig
+    except Exception:
+        from geophysics_forward_plotting.backend.matplotlib_backend import wiggle_plot
+        return wiggle_plot(
+            data, dt=dt, dx=1.0, x0=x0, skip=skip, gain=gain,
+            fill_positive=fill_positive, x_label=x_label, y_label=y_label,
+            title=title, figsize=figsize, dpi=dpi,
+        )
+
+
+# ---------------------------------------------------------------------------
+# 3D 接口适配 — cigvis.create_slices() + cigvis.plot3D()
 # ---------------------------------------------------------------------------
 
 
@@ -213,39 +288,44 @@ def plot3d_volume(
     cmap: str = "gray",
     clim: tuple[float, float] | None = None,
     slices: tuple[int, int, int] | None = None,
+    save_path: str | None = None,
 ) -> Any:
     """
-    使用 cigvis 3D vispy 接口显示体数据。
+    使用 cigvis 3D API 渲染体数据。
 
-    cigvis 提供的 3D 能力（参考 Gallery）包括：
-      - 多切片显示
-      - fault / horizon / RGT overlay
-      - 点云 / 井轨迹
-
-    需要 vispy 环境（通常需要 GUI 桌面）。
+    CIGVis 示例（examples/3Dvispy/01-slice.py）:
+      nodes = cigvis.create_slices(volume, cmap='Petrel')
+      nodes += cigvis.create_colorbar_from_nodes(nodes, 'Amplitude', select='slices')
+      cigvis.plot3D(nodes, view=cigvis.Plot3DView(...), save=cigvis.Plot3DSave(...))
     """
     _require_cigvis()
-    nx, ny, nz = data.shape if data.ndim == 3 else (0, 0, 0)
     if data.ndim != 3:
-        raise ValueError("plot3d_volume 期望 3D 数组 (nz, ny, nx)")
+        raise ValueError("plot3d_volume expects 3D array (nz, ny, nx)")
 
     ni, nj, nk = data.shape
     sx, sy, sz = slices or (ni // 2, nj // 2, nk // 2)
 
-    # cigvis.plot3d 是 cigvis 的高层 3D 接口
-    # 参数随 cigvis 版本可能调整，在此集中维护
-    canvas = cigvis.plot3d(  # type: ignore[attr-defined]
+    nodes = cigvis.create_slices(
         data,
-        pos=[sx, sy, sz],
+        pos=[[sx], [sy], [sz]],
+        clim=list(clim) if clim else None,
         cmap=cmap,
-        clim=clim,
-        return_canvas=True,
     )
-    return canvas
+    nodes += cigvis.create_colorbar_from_nodes(
+        nodes, "Amplitude", select="slices"
+    )
+
+    save_kw = cigvis.Plot3DSave(path=save_path) if save_path else None
+    cigvis.plot3D(
+        nodes,
+        view=cigvis.Plot3DView(size=(800, 600)),
+        save=save_kw,
+    )
+    return nodes
 
 
 # ---------------------------------------------------------------------------
-# SliceViewer 适配
+# SliceViewer 适配 — cigvis.sliceviewer
 # ---------------------------------------------------------------------------
 
 
@@ -258,16 +338,16 @@ def launch_sliceviewer(
     """
     启动 cigvis SliceViewer 交互式切片浏览器。
 
-    参考 CIGVis Gallery：
-      https://cigvis.readthedocs.io/en/latest/gallery/index.html#sliceviewer
-
-    无法在无 GUI 环境（如 CI 流水线）中运行，运行前请检查 is_available()。
+    需要: pip install "cigvis[sliceviewer]"
     """
     _require_cigvis()
-    viewer = cigvis.SliceViewer(  # type: ignore[attr-defined]
-        data,
-        cmap=cmap,
-        clim=clim,
-    )
-    viewer.show()
-    return viewer
+    try:
+        from cigvis import sliceviewer  # type: ignore[import-untyped]
+        viewer = sliceviewer.SliceViewer(data, cmap=cmap, clim=clim)
+        viewer.show()
+        return viewer
+    except ImportError:
+        raise BackendUnavailableError(
+            "SliceViewer requires plotly and panel.\n"
+            'Install: pip install "cigvis[sliceviewer]"'
+        )
