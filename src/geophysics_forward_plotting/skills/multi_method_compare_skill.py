@@ -59,8 +59,8 @@ class MultiMethodCompareSkill(BaseSkill):
         style = PlotStyle()
         cmap = task.parameters.get("cmap", style.diverging_cmap if sym else style.sequential_cmap)
 
-        # 布局：<=2 个用 1xN，3~4 个用 2x2
-        ncols = 2 if n <= 2 else 2
+        # 布局：1 个用 1x1，2 个用 1x2，3~4 个用 2x2
+        ncols = min(n, 2)
         nrows = 1 if n <= 2 else 2
         fw, fh = task.figure_size
         fig_w = fw * ncols + 1.2   # 为 colorbar 预留空间
@@ -116,12 +116,14 @@ class MultiMethodCompareSkill(BaseSkill):
 
         # 共享 colorbar
         if last_im is not None:
+            from geophysics_forward_plotting.core.defaults import COLORBAR_LABEL_FONT_SIZE, DEFAULT_FONT_SIZE
             cb = fig.colorbar(last_im, cax=cbar_ax)
-            cb.set_label(task.colorbar_label or "Amplitude", fontsize=11)
-            cb.ax.tick_params(labelsize=10)
+            cb.set_label(task.colorbar_label or "Amplitude", fontsize=COLORBAR_LABEL_FONT_SIZE)
+            cb.ax.tick_params(labelsize=DEFAULT_FONT_SIZE)
 
-        fig.suptitle(task.title, fontsize=14)
-        fig.tight_layout()
+        from geophysics_forward_plotting.core.defaults import SUPTITLE_FONT_SIZE
+        fig.suptitle(task.title, fontsize=SUPTITLE_FONT_SIZE)
+        fig.tight_layout(rect=[0, 0, 1, 0.96])  # 为 suptitle 留空间
         apply_publication_style(fig, style)
 
         saved = save_figure(

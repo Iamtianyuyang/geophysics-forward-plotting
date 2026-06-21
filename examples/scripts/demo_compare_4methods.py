@@ -8,6 +8,7 @@
 """
 
 import os
+import sys
 from pathlib import Path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
@@ -20,6 +21,13 @@ from geophysics_forward_plotting.core.models import DataContext
 DATA_DIR = Path("examples/data")
 OUT_DIR = Path("examples/outputs")
 
+_REQUIRED = ["method_ps_ref.npy", "method_deepwave.npy", "method_coarse.npy", "method_smooth.npy"]
+_missing = [f for f in _REQUIRED if not (DATA_DIR / f).exists()]
+if _missing:
+    print(f"[ERROR] Missing data: {_missing}")
+    print("Run: python examples/scripts/generate_data.py")
+    sys.exit(1)
+
 arrays = tuple(
     np.load(DATA_DIR / f"method_{m}.npy")
     for m in ("ps_ref", "deepwave", "coarse", "smooth")
@@ -28,19 +36,19 @@ context = DataContext(raw_data=arrays)
 
 task = FigureTask(
     task_type="multi_method_comparison",
-    title="Wavefield Comparison at t = 500 ms",
+    title="Wavefield Comparison at $t$ = 500 ms",
     output_dir=OUT_DIR,
-    method_names=("Pseudo-Spectral", "Deepwave", "Coarse", "Smoothed"),
+    method_names=("(a) Pseudo-Spectral", "(b) Deepwave", "(c) Coarse ($\\Delta x$ = 20 m)", "(d) Smoothed"),
     dx=0.01,
     dz=0.01,
     x_label="Distance (km)",
     y_label="Depth (km)",
-    colorbar_label="Amplitude",
+    colorbar_label="Pressure (Pa)",
     symmetric_clim=True,
     clip_percentile=99.0,
-    figure_size=(8.0, 6.0),
+    figure_size=(7.0, 5.5),
     export_formats=("png", "pdf"),
-    dpi=300,
+    dpi=600,
     parameters={"cmap": "seismic"},
 )
 

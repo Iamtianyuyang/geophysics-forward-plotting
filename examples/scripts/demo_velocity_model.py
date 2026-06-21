@@ -1,6 +1,7 @@
 """示例：绘制速度模型（五层倾斜界面 + 低速异常体）。"""
 
 import os
+import sys
 from pathlib import Path
 
 os.environ.setdefault("MPLBACKEND", "Agg")
@@ -13,6 +14,13 @@ from geophysics_forward_plotting.core.models import DataContext
 DATA_DIR = Path("examples/data")
 OUT_DIR = Path("examples/outputs")
 
+_REQUIRED = ["velocity_model.npy"]
+_missing = [f for f in _REQUIRED if not (DATA_DIR / f).exists()]
+if _missing:
+    print(f"[ERROR] Missing data: {_missing}")
+    print("Run: python examples/scripts/generate_data.py")
+    sys.exit(1)
+
 data = np.load(DATA_DIR / "velocity_model.npy")
 context = DataContext(raw_data=(data,))
 
@@ -24,8 +32,8 @@ task = FigureTask(
     dz=0.01,
     x_label="Distance (km)",
     y_label="Depth (km)",
-    colorbar_label="Velocity (m/s)",
-    figure_size=(8.0, 5.0),
+    colorbar_label="Velocity (m s$^{-1}$)",
+    figure_size=(3.5, 2.8),
     export_formats=("png", "pdf"),
     dpi=300,
     parameters={"cmap": "jet"},

@@ -42,9 +42,13 @@ def bar_chart(
     """绘制单系列柱状图，适合时间/内存/加速比对比。"""
     from geophysics_forward_plotting.core.defaults import (
         LABEL_FONT_SIZE,
-        SUPTITLE_FONT_SIZE,
         TITLE_FONT_SIZE,
     )
+
+    # 从 ylabel 提取单位后缀（如 "Time (s)" → "s"）
+    unit = ""
+    if "(" in ylabel and ")" in ylabel:
+        unit = ylabel[ylabel.index("(") + 1 : ylabel.index(")")]
 
     plt = _get_mpl()
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
@@ -57,10 +61,11 @@ def bar_chart(
     )
 
     for bar, val in zip(bars, values):
+        label = f"{val:.3f} {unit}" if unit else f"{val:.3f}"
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() + max(values) * 0.03,
-            f"{val:.3f} s",
+            label,
             ha="center", va="bottom", fontsize=9, fontweight="bold",
             color="#2c3e50",
         )
