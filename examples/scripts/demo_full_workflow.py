@@ -3,7 +3,7 @@
 完整工作流演示：五层速度模型 → PlottingAgent → 7 种 Skill 绘图
 
 数据来源
-  python examples/scripts/generate_data.py   # 生成 deepwave + FDTD 数据
+  python examples/scripts/generate_data.py   # 生成 deepwave + 伪谱法数据
 
 运行
   cd geophysics-forward-plotting

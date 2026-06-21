@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-2D 声波方程正演模拟 — 五层倾斜速度模型（纯 NumPy，无额外依赖）
+2D 声波方程正演模拟 — 伪谱法参考解 + 五层倾斜速度模型
 
 速度模型
   Layer 0 : 0–40 行   v ≈ 1500 m/s  （水层）
@@ -8,30 +8,20 @@
   Layer 2 : 80–120 行 v ≈ 2800 m/s  （中沉积）
   Layer 3 : 120–160 行 v ≈ 3400 m/s  （深沉积）
   Layer 4 : 160+ 行    v ≈ 4000 m/s  （基底）
-  + 正弦倾斜界面 ±12 网格点
-  + 高斯低速异常体（模型中部偏左）
-  + 横向速度梯度（右侧 +200 m/s）
+  + 正弦倾斜界面、低速异常体、横向梯度
+
+无频散条件
+  f0=15 Hz, v_min=1500 → λ_min=100 m, dx=10 → 10 点/波长 ✓
 
 参数
   网格  : 200 × 400，dx = dz = 10 m
   时间  : NT=1000 步，dt=0.001 s → 仿真时长 1.0 s
-  震源  : Ricker 子波，主频 25 Hz，位于模型中央上方
-  接收  : 全孔径地表 400 道
+  震源  : Ricker 子波，主频 15 Hz，位于模型中央上方
+  方法  : 伪谱法（FFT 空间导数，谱精度）
 
 产出 examples/data/forward/
-  velocity_model.npy   (200, 400)  速度模型
-  shot_record.npy      (1000, 400) FDTD 炮记录
-  shot_smooth.npy      (1000, 400) 时间方向平滑炮记录
-  snap_200ms.npy       (200, 400)  t = 200 ms 波场快照
-  snap_500ms.npy       (200, 400)  t = 500 ms 波场快照
-  snap_750ms.npy       (200, 400)  t = 750 ms 波场快照
-  perf.json                        不同网格规模运行时间
 
-运行
-  cd geophysics-forward-plotting
-  python examples/scripts/forward_modeling.py
-
-注意：此脚本为纯 NumPy FDTD 实现，用于无 deepwave 环境的后备。
+注意：此脚本为纯 NumPy 伪谱法实现，用于无 deepwave 环境的后备。
 推荐使用 generate_data.py 生成完整数据（含 deepwave 炮记录）。
 """
 
@@ -49,7 +39,7 @@ NZ, NX = 200, 400      # 深度 × 横向网格点数
 DX     = 10.0           # 空间步长 (m)
 DT     = 0.001          # 时间步长 (s)
 NT     = 1000           # 时间步数
-F0     = 25.0           # Ricker 子波主频 (Hz)
+F0     = 15.0           # Ricker 子波主频 (Hz) — 降低以满足无频散条件
 ABSORB = 30             # 吸收边界宽度（网格点）
 REC_Z  = 2              # 接收道深度行
 
@@ -125,10 +115,17 @@ def fdtd2d(
     dx: float = DX,
     absorb: int = ABSORB,
 ) -> tuple[np.ndarray, dict[int, np.ndarray]]:
+    """伪谱法声波正演（FFT 空间导数，谱精度）。"""
     nz, nx = vel.shape
     c2 = (vel * (dt / dx)) ** 2
     sp = make_sponge(nz, nx, absorb)
     src = ricker_wavelet(f0, dt, nt)
+
+    # 波数
+    kx = np.fft.fftfreq(nx, d=dx) * 2 * np.pi
+    kz = np.fft.fftfreq(nz, d=dx) * 2 * np.pi
+    KX, KZ = np.meshgrid(kx, kz)
+    K2 = KX**2 + KZ**2
 
     p     = np.zeros((nz, nx), dtype=np.float32)
     pp    = np.zeros((nz, nx), dtype=np.float32)
@@ -138,12 +135,9 @@ def fdtd2d(
     snap_set = frozenset(snap_its)
 
     for it in range(nt):
-        lap = np.zeros_like(p)
-        lap[1:-1, 1:-1] = (
-            p[2:,   1:-1] + p[:-2,  1:-1]
-          + p[1:-1, 2:  ] + p[1:-1, :-2 ]
-          - 4.0 * p[1:-1, 1:-1]
-        )
+        # 伪谱法 Laplacian
+        P = np.fft.fft2(p)
+        lap = np.real(np.fft.ifft2(-K2 * P)).astype(np.float32)
 
         pn               = 2.0 * p - pp + c2 * lap
         pn[src_z, src_x] += src[it]

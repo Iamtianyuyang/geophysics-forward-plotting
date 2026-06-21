@@ -37,29 +37,28 @@ DX = 0.01
 
 
 def main() -> None:
-    required = ["method_fd_fine.npy", "method_fd_coarse.npy",
-                "method_smooth.npy", "perf.json"]
+    required = ["method_ps_ref.npy", "method_deepwave.npy",
+                "method_smooth.npy", "method_coarse.npy", "perf.json"]
     missing = [f for f in required if not (DATA_DIR / f).exists()]
     if missing:
         print(f"[ERROR] Missing data: {missing}")
         print("Run: python examples/scripts/generate_data.py")
         sys.exit(1)
 
-    reference = np.load(DATA_DIR / "method_fd_fine.npy").astype(np.float32)
-    fd_coarse = np.load(DATA_DIR / "method_fd_coarse.npy").astype(np.float32)
+    reference = np.load(DATA_DIR / "method_ps_ref.npy").astype(np.float32)
+    deepwave  = np.load(DATA_DIR / "method_deepwave.npy").astype(np.float32)
     smoothed  = np.load(DATA_DIR / "method_smooth.npy").astype(np.float32)
+    coarse    = np.load(DATA_DIR / "method_coarse.npy").astype(np.float32)
 
     with open(DATA_DIR / "perf.json", encoding="utf-8") as f:
         perf = json.load(f)
-    # perf["values"]: [0.025, 0.082, 0.187] for [100x200, 200x400, 300x600]
-    runtime_ref = perf["values"][1]    # 200x400 ~ FD-fine
-    runtime_coarse = perf["values"][0]  # 100x200 ~ FD-coarse
+    runtime_ref = perf["values"][1]    # 200x400 ~ standard grid
 
     agent = MethodEvaluationAgent()
     report = agent.evaluate(
-        new_method=MethodResult("FD-fine", reference, runtime=runtime_ref),
+        new_method=MethodResult("Deepwave", deepwave, runtime=runtime_ref),
         baselines=[
-            MethodResult("FD-coarse", fd_coarse, runtime=runtime_coarse),
+            MethodResult("Coarse (dx=20m)", coarse, runtime=perf["values"][0]),
             MethodResult("Smoothed", smoothed, runtime=runtime_ref * 0.5),
         ],
         reference=reference,

@@ -35,7 +35,7 @@ def bar_chart(
     *,
     ylabel: str = "",
     title: str = "",
-    color: str = "steelblue",
+    color: str = "#4C72B0",
     figsize: tuple[float, float] = (6.0, 4.0),
     dpi: int = 600,
 ) -> Any:
@@ -43,13 +43,31 @@ def bar_chart(
     plt = _get_mpl()
     fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
     x = np.arange(len(categories))
-    ax.bar(x, values, color=color, width=0.5)
+
+    bars = ax.bar(x, values, color=color, width=0.55, edgecolor="white", linewidth=0.8)
+
+    # 数值标注
+    for bar, val in zip(bars, values):
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + max(values) * 0.02,
+            f"{val:.3f}",
+            ha="center", va="bottom", fontsize=9, fontweight="bold",
+        )
+
     ax.set_xticks(x)
-    ax.set_xticklabels(categories, rotation=15, ha="right")
-    ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    ax.set_xticklabels(categories, fontsize=10)
+    ax.set_ylabel(ylabel, fontsize=11)
+    ax.set_title(title, fontsize=12, fontweight="bold", pad=12)
     ax.spines["top"].set_visible(False)
     ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_linewidth(0.8)
+    ax.spines["bottom"].set_linewidth(0.8)
+    ax.tick_params(width=0.8, labelsize=9)
+    ax.set_ylim(0, max(values) * 1.18)
+    ax.grid(axis="y", alpha=0.3, linestyle="--")
+    ax.set_axisbelow(True)
+    fig.tight_layout()
     return fig
 
 

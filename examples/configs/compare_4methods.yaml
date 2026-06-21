@@ -1,15 +1,15 @@
 task_type: multi_method_comparison
 title: "Wavefield Comparison at t = 500 ms"
 data_paths:
-  - examples/data/method_fd_fine.npy
-  - examples/data/method_fd_coarse.npy
+  - examples/data/method_ps_ref.npy
+  - examples/data/method_deepwave.npy
+  - examples/data/method_coarse.npy
   - examples/data/method_smooth.npy
-  - examples/data/method_perturbed.npy
 method_names:
-  - FD-fine
-  - FD-coarse
+  - Pseudo-Spectral
+  - Deepwave
+  - Coarse
   - Smoothed
-  - Perturbed
 output_dir: examples/outputs
 dx: 0.01
 dz: 0.01

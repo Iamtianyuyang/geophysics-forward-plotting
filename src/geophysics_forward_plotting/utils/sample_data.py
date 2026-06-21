@@ -41,7 +41,7 @@ def _build_velocity_model(nz: int = 200, nx: int = 400) -> NDArray:
     return vel
 
 
-def _ricker_wavelet(nt: int, dt: float, f0: float) -> NDArray:
+def _ricker_wavelet(nt: int, dt: float, f0: float = 15.0) -> NDArray:
     t = np.arange(nt, dtype=float) * dt
     t0 = 1.5 / f0
     x = np.pi * f0 * (t - t0)
@@ -58,25 +58,27 @@ def _make_sponge(nz: int, nx: int, width: int = 30) -> NDArray:
 
 
 def _fdtd_shot_record(vel: NDArray, nt: int = 1000, dt: float = 0.001,
-                      dx: float = 10.0, f0: float = 25.0) -> NDArray:
-    """简化 FDTD 生成炮记录 (nt, nx)。"""
+                      dx: float = 10.0, f0: float = 15.0) -> NDArray:
+    """简化伪谱法生成炮记录 (nt, nx)。"""
     nz, nx = vel.shape
     c2 = (vel * (dt / dx)) ** 2
     sp = _make_sponge(nz, nx)
     src = _ricker_wavelet(nt, dt, f0)
     src_x, src_z = nx // 2, 2
 
+    # 波数
+    kx = np.fft.fftfreq(nx, d=dx) * 2 * np.pi
+    kz = np.fft.fftfreq(nz, d=dx) * 2 * np.pi
+    KX, KZ = np.meshgrid(kx, kz)
+    K2 = KX**2 + KZ**2
+
     p = np.zeros((nz, nx), dtype=np.float32)
     pp = np.zeros((nz, nx), dtype=np.float32)
     record = np.zeros((nt, nx), dtype=np.float32)
 
     for it in range(nt):
-        lap = np.zeros_like(p)
-        lap[1:-1, 1:-1] = (
-            p[2:, 1:-1] + p[:-2, 1:-1]
-            + p[1:-1, 2:] + p[1:-1, :-2]
-            - 4.0 * p[1:-1, 1:-1]
-        )
+        P = np.fft.fft2(p)
+        lap = np.real(np.fft.ifft2(-K2 * P)).astype(np.float32)
         pn = 2.0 * p - pp + c2 * lap
         pn[src_z, src_x] += src[it]
         pn *= sp
@@ -98,23 +100,26 @@ def make_shot_record(nt: int = 1000, nx: int = 400, dt: float = 0.001) -> NDArra
 
 
 def make_wavefield_snapshot(nz: int = 200, nx: int = 400) -> NDArray:
-    """用 FDTD 生成 t=500ms 波场快照 (nz, nx)。"""
+    """用伪谱法生成 t=500ms 波场快照 (nz, nx)。"""
     vel = _build_velocity_model(nz, nx)
-    c2 = (vel * (0.001 / 10.0)) ** 2
+    dx = 10.0
+    dt = 0.001
+    c2 = (vel * (dt / dx)) ** 2
     sp = _make_sponge(nz, nx)
-    src = _ricker_wavelet(1000, 0.001, 25.0)
+    src = _ricker_wavelet(1000, dt)
     src_x, src_z = nx // 2, 2
+
+    kx = np.fft.fftfreq(nx, d=dx) * 2 * np.pi
+    kz = np.fft.fftfreq(nz, d=dx) * 2 * np.pi
+    KX, KZ = np.meshgrid(kx, kz)
+    K2 = KX**2 + KZ**2
 
     p = np.zeros((nz, nx), dtype=np.float32)
     pp = np.zeros((nz, nx), dtype=np.float32)
 
     for it in range(500):
-        lap = np.zeros_like(p)
-        lap[1:-1, 1:-1] = (
-            p[2:, 1:-1] + p[:-2, 1:-1]
-            + p[1:-1, 2:] + p[1:-1, :-2]
-            - 4.0 * p[1:-1, 1:-1]
-        )
+        P = np.fft.fft2(p)
+        lap = np.real(np.fft.ifft2(-K2 * P)).astype(np.float32)
         pn = 2.0 * p - pp + c2 * lap
         pn[src_z, src_x] += src[it]
         pn *= sp
@@ -133,42 +138,25 @@ def make_volume_3d(nz: int = 30, ny: int = 30, nx: int = 60) -> NDArray:
 
 def make_method_results(nz: int = 200, nx: int = 400) -> list[NDArray]:
     """生成四个方法的波场快照（物理上不同的结果）。"""
-    base = make_wavefield_snapshot(nz, nx)
+    base = make_wavefield_snapshot(nz, nx)  # pseudo-spectral reference
 
-    # FD-coarse: 下采样再上采样
+    # Deepwave standard (same grid, slightly different due to numerics)
+    # Approximate by adding small perturbation to represent numerical difference
+    rng = np.random.default_rng(42)
+    deepwave_approx = base + rng.normal(0, 0.001 * np.abs(base).max(), base.shape).astype(np.float32)
+
+    # Coarse: downsample + upsample
     coarse = base[::2, ::2]
-    fd_coarse = np.repeat(np.repeat(coarse, 2, axis=0), 2, axis=1)[:nz, :nx]
+    coarse_up = np.repeat(np.repeat(coarse, 2, axis=0), 2, axis=1)[:nz, :nx]
 
-    # Smoothed: 高斯平滑
+    # Smoothed: Gaussian low-pass
     from numpy.fft import fft2, ifft2
     kz = np.fft.fftfreq(nz).reshape(-1, 1)
     kx = np.fft.fftfreq(nx).reshape(1, -1)
     gauss = np.exp(-2 * np.pi**2 * 9 * (kz**2 + kx**2)).astype(np.float32)
     smoothed = np.real(ifft2(fft2(base) * gauss)).astype(np.float32)
 
-    # Perturbed: 速度扰动
-    rng = np.random.default_rng(42)
-    vel_pert = _build_velocity_model(nz, nx) * (1 + rng.normal(0, 0.05, (nz, nx)).astype(np.float32))
-    vel_pert = np.maximum(vel_pert, 1400.0)
-    c2 = (vel_pert * (0.001 / 10.0)) ** 2
-    sp = _make_sponge(nz, nx)
-    src = _ricker_wavelet(1000, 0.001, 25.0)
-    p = np.zeros((nz, nx), dtype=np.float32)
-    pp = np.zeros((nz, nx), dtype=np.float32)
-    for it in range(500):
-        lap = np.zeros_like(p)
-        lap[1:-1, 1:-1] = (
-            p[2:, 1:-1] + p[:-2, 1:-1]
-            + p[1:-1, 2:] + p[1:-1, :-2]
-            - 4.0 * p[1:-1, 1:-1]
-        )
-        pn = 2.0 * p - pp + c2 * lap
-        pn[2, nx // 2] += src[it]
-        pn *= sp
-        pp[:] = p
-        p[:] = pn
-
-    return [base, fd_coarse, smoothed, p]
+    return [base, deepwave_approx, coarse_up, smoothed]
 
 
 def ensure_example_data(data_dir: Path) -> None:
@@ -189,8 +177,8 @@ def ensure_example_data(data_dir: Path) -> None:
     if not (data_dir / "volume_3d.npy").exists():
         specs["volume_3d.npy"] = make_volume_3d()
 
-    method_names = ["method_fd_fine.npy", "method_fd_coarse.npy",
-                    "method_smooth.npy", "method_perturbed.npy"]
+    method_names = ["method_ps_ref.npy", "method_deepwave.npy",
+                    "method_coarse.npy", "method_smooth.npy"]
     if not any((data_dir / n).exists() for n in method_names):
         methods = make_method_results()
         for name, arr in zip(method_names, methods):

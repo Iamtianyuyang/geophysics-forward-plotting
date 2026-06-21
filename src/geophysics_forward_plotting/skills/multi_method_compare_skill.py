@@ -97,13 +97,15 @@ class MultiMethodCompareSkill(BaseSkill):
             row, col = divmod(idx, ncols)
             axes[row][col].set_visible(False)
 
-        # 共享 colorbar（右侧一个）
-        if last_im is not None:
-            cb = fig.colorbar(last_im, ax=axes.ravel().tolist(), shrink=0.8)
-            cb.set_label(task.colorbar_label or "Amplitude")
-
         fig.suptitle(task.title, fontsize=style.font_size + 1)
         fig.tight_layout()
+
+        # 共享 colorbar（右侧一个），tight_layout 之后再添加避免重叠
+        if last_im is not None:
+            cb = fig.colorbar(last_im, ax=axes.ravel().tolist(), shrink=0.8, pad=0.02)
+            cb.set_label(task.colorbar_label or "Amplitude")
+            # 为 colorbar 腾出空间
+            fig.subplots_adjust(right=0.88)
         apply_publication_style(fig, style)
 
         saved = save_figure(

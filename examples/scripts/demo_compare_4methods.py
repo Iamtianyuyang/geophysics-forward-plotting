@@ -1,10 +1,10 @@
 """示例：四方法波场对比图（统一 clim，共享 colorbar，2x2 布局）。
 
 比较四种不同方法在 t=500 ms 时刻的波场快照：
-  FD-fine    : 精细网格 FDTD 参考解
-  FD-coarse  : 粗网格 FDTD（分辨率降低）
-  Smoothed   : 高斯低通滤波（模拟低频方法）
-  Perturbed  : 速度模型扰动（+5% 随机噪声）
+  Pseudo-Spectral : 伪谱法参考解（谱精度空间导数）
+  Deepwave        : deepwave 声波正演（dx=10m）
+  Coarse          : deepwave 粗网格（dx=20m，分辨率降低）
+  Smoothed        : 高斯低通滤波（模拟低频方法）
 """
 
 import os
@@ -22,7 +22,7 @@ OUT_DIR = Path("examples/outputs")
 
 arrays = tuple(
     np.load(DATA_DIR / f"method_{m}.npy")
-    for m in ("fd_fine", "fd_coarse", "smooth", "perturbed")
+    for m in ("ps_ref", "deepwave", "coarse", "smooth")
 )
 context = DataContext(raw_data=arrays)
 
@@ -30,7 +30,7 @@ task = FigureTask(
     task_type="multi_method_comparison",
     title="Wavefield Comparison at t = 500 ms",
     output_dir=OUT_DIR,
-    method_names=("FD-fine", "FD-coarse", "Smoothed", "Perturbed"),
+    method_names=("Pseudo-Spectral", "Deepwave", "Coarse", "Smoothed"),
     dx=0.01,
     dz=0.01,
     x_label="Distance (km)",
