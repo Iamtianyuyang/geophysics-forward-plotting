@@ -9,6 +9,8 @@ method comparisons, error maps, wiggle plots, performance charts, and 3D volume
 views without losing physical coordinates, units, axis direction, or shared
 color normalization.
 
+**English** | [中文](README_zh.md)
+
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![CIGVis](https://img.shields.io/badge/rendering-CIGVis--first-orange)
 ![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)
